@@ -1,0 +1,268 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "service": "backend",
+    "last_updated": "2026-01-17T16:00:00Z",
+    "total_skills": 8,
+    "source_task": "AIRIS-82: Create Unipile Connector NPM Package"
+  },
+  "categories": {
+    "testing": [
+      {
+        "id": "test-coverage-branch-priority",
+        "name": "Prioritize branch coverage in test planning",
+        "problem": "Test suites can achieve high statement/line coverage but still miss critical logic branches, leading to false confidence in code quality",
+        "symptoms": [
+          "Statement coverage >80% but branch coverage <60%",
+          "Tests pass but optional parameters/error paths untested",
+          "Conditional logic uncovered by tests"
+        ],
+        "root_cause": "Focus on happy path testing without systematically testing all conditional branches",
+        "investigation": [
+          "Run coverage report with branch metrics visible",
+          "Identify files with statement coverage >80% but branch coverage <80%",
+          "Review uncovered branches in coverage HTML report"
+        ],
+        "solution": "Implement test cases for all conditional branches: error handling paths, optional parameter combinations, alternative response formats, edge cases in conditional logic",
+        "prevention": [
+          "Set Jest branch coverage threshold to 80% in jest.config.js",
+          "Review coverage report during code review",
+          "Add tests for each conditional branch during implementation"
+        ],
+        "examples": [
+          {
+            "context": "Unipile HTTP client with retry logic",
+            "before_coverage": "59.56% branch coverage",
+            "after_coverage": "90.71% branch coverage",
+            "test_additions": [
+              "Rate limit errors without retry flag",
+              "Connection errors",
+              "Server errors (5xx)",
+              "Unknown error types",
+              "Alternative response formats"
+            ]
+          }
+        ],
+        "tags": ["testing", "coverage", "quality", "jest"],
+        "priority": "high"
+      },
+      {
+        "id": "test-optional-parameters",
+        "name": "Test all combinations of optional parameters",
+        "problem": "Methods with multiple optional parameters can have untested branches when only default cases are tested",
+        "solution": "Create test cases for each optional parameter individually, then test meaningful combinations",
+        "examples": [
+          {
+            "method": "LinkedInService.searchCompanies()",
+            "optional_params": ["revenue", "growthRate", "technologies", "departmentHeadcount"],
+            "approach": "Test each filter individually, then test 2-3 filter combinations"
+          }
+        ],
+        "tags": ["testing", "parameters", "branch-coverage"],
+        "priority": "medium"
+      },
+      {
+        "id": "test-alternative-response-formats",
+        "name": "Test alternative API response formats",
+        "problem": "APIs may return data in different field names or structures based on version or context",
+        "solution": "When accessing response fields conditionally (e.g., `data.emails || data.items`), test both formats",
+        "examples": [
+          {
+            "code": "const emails = response.data.emails || response.data.items || [];",
+            "tests_needed": [
+              "Response with emails field",
+              "Response with items field",
+              "Response with neither (empty array)"
+            ]
+          }
+        ],
+        "tags": ["testing", "api", "compatibility"],
+        "priority": "medium"
+      }
+    ],
+    "architecture": [
+      {
+        "id": "monorepo-framework-agnostic-core",
+        "name": "Separate framework-agnostic core from framework integrations",
+        "pattern": "Create a framework-agnostic core package with pure TypeScript services, then build framework-specific integration packages on top",
+        "problem": "API client libraries tightly coupled to specific frameworks limit reusability across projects",
+        "trade_offs": {
+          "pros": [
+            "Core package can be used in any JavaScript/TypeScript environment",
+            "Framework integrations are thin wrappers providing ergonomic APIs",
+            "Easier to test core logic without framework dependencies",
+            "Single source of truth for API contracts"
+          ],
+          "cons": [
+            "Requires maintaining multiple packages",
+            "Slightly more complex dependency management",
+            "Need to coordinate version releases"
+          ]
+        },
+        "when_to_use": [
+          "Building reusable API client libraries",
+          "Supporting multiple frameworks (NestJS, Express, Fastify, etc.)",
+          "Creating libraries for multiple target projects"
+        ],
+        "when_to_avoid": [
+          "Single-framework projects with no reuse requirements",
+          "Prototypes or proof-of-concepts"
+        ],
+        "examples": [
+          {
+            "structure": "packages/core (no external deps) + packages/nestjs (depends on @nestjs/common + core)",
+            "benefits": "Core can be used in CallAiris (NestJS) and Holocron v2, while NestJS package provides Module/DI integration"
+          }
+        ],
+        "tags": ["architecture", "monorepo", "reusability"],
+        "priority": "high"
+      },
+      {
+        "id": "rate-limiting-per-account",
+        "name": "Implement per-account rate limiting for multi-tenant APIs",
+        "pattern": "Track rate limits separately for each account/API key, not globally",
+        "problem": "Global rate limiting can block all accounts when one account is rate-limited",
+        "solution": "Maintain separate state (retryAfter, retryCount, isRateLimited) per account identifier",
+        "examples": [
+          {
+            "implementation": "Map<accountId, RateLimitState> with exponential backoff per account",
+            "exponential_backoff": "5min base, 2x multiplier, 2h max"
+          }
+        ],
+        "tags": ["rate-limiting", "multi-tenant", "api"],
+        "priority": "high"
+      }
+    ],
+    "best-practices": [
+      {
+        "id": "typescript-strict-mode-public-api",
+        "name": "Enforce TypeScript strict mode with no 'any' in public APIs",
+        "pattern": "Set strict:true, noImplicitAny:true in tsconfig, explicitly type all public method signatures",
+        "context": "Shared libraries and NPM packages used across projects",
+        "benefits": [
+          "Catch type errors at compile time, not runtime",
+          "Better IDE autocomplete and documentation",
+          "Forces developers to think about edge cases",
+          "Self-documenting code"
+        ],
+        "example": {
+          "config": "tsconfig.json: strict:true, noImplicitAny:true",
+          "enforcement": "Grep for 'any' in public APIs during code review",
+          "escape_hatch": "Use 'unknown' instead of 'any' when type truly unknown, force type narrowing"
+        },
+        "related": ["typescript-quality", "api-design"],
+        "tags": ["typescript", "quality", "npm-package"],
+        "priority": "high"
+      },
+      {
+        "id": "monorepo-turborepo-caching",
+        "name": "Use Turborepo for monorepo build orchestration",
+        "pattern": "Configure Turborepo with task pipelines and caching for faster builds",
+        "context": "Monorepos with multiple interdependent packages",
+        "benefits": [
+          "Parallel builds across packages",
+          "Incremental builds (only rebuild what changed)",
+          "Local and remote caching",
+          "Clear dependency graph"
+        ],
+        "example": {
+          "turbo_json": "pipeline: { build: { dependsOn: ['^build'], outputs: ['dist/**'] } }",
+          "speedup": "Subsequent builds <5s instead of 30s+"
+        },
+        "tags": ["monorepo", "performance", "build"],
+        "priority": "medium"
+      },
+      {
+        "id": "nestjs-dynamic-module-async",
+        "name": "Implement forRootAsync for NestJS dynamic modules",
+        "pattern": "Provide forRoot (sync) and forRootAsync (async) methods for module configuration",
+        "context": "NestJS modules that need configuration from environment variables, async factories, or other modules",
+        "benefits": [
+          "Support async configuration (e.g., loading from config service)",
+          "Support dependency injection in configuration",
+          "Standard NestJS pattern, familiar to developers"
+        ],
+        "example": {
+          "methods": "forRoot(config) for static, forRootAsync({ useFactory, inject }) for async",
+          "use_case": "Load API keys from ConfigService, Vault, or environment"
+        },
+        "related": ["nestjs-modules"],
+        "tags": ["nestjs", "dependency-injection", "configuration"],
+        "priority": "medium"
+      },
+      {
+        "id": "error-handling-categorized-errors",
+        "name": "Create categorized error classes for different failure types",
+        "pattern": "Extend Error class with specific error types: TimeoutError, RateLimitError, AuthError, ConnectionError, UnknownError",
+        "context": "API clients and HTTP libraries",
+        "benefits": [
+          "Consumers can catch and handle specific error types",
+          "Better error messages with context",
+          "Easier debugging and monitoring",
+          "Type-safe error handling"
+        ],
+        "example": {
+          "error_types": "TimeoutError (408), RateLimitError (429), AuthError (401/403), ConnectionError (network), UnknownError (fallback)",
+          "usage": "try { await api.call() } catch (e) { if (e instanceof RateLimitError) { /* wait and retry */ } }"
+        },
+        "tags": ["error-handling", "api", "typescript"],
+        "priority": "medium"
+      }
+    ],
+    "debugging": [
+      {
+        "id": "fake-timers-async-retry",
+        "name": "Use Jest fake timers for testing async retry logic",
+        "issue": "Testing exponential backoff and retry logic with real timers is slow and flaky",
+        "detection": "Tests with setTimeout/setInterval take long time to run or timeout",
+        "investigation": [
+          "Check if code uses setTimeout/setInterval for delays",
+          "Verify test is waiting for async operations",
+          "Look for runAllTimers() or advanceTimersByTime() calls"
+        ],
+        "tools": [
+          "jest.useFakeTimers()",
+          "jest.runAllTimers()",
+          "jest.advanceTimersByTime(ms)"
+        ],
+        "solution": "Call jest.useFakeTimers() in beforeEach, use jest.runAllTimers() or jest.advanceTimersByTime() to fast-forward time, call jest.useRealTimers() in afterEach",
+        "examples": [
+          {
+            "test": "Retry with 5 minute delay",
+            "without_fake_timers": "Test takes 5+ minutes to run",
+            "with_fake_timers": "jest.advanceTimersByTime(5 * 60 * 1000); // instant"
+          }
+        ],
+        "tags": ["jest", "testing", "async", "timers"],
+        "priority": "medium"
+      }
+    ],
+    "configuration": [
+      {
+        "id": "jest-coverage-thresholds",
+        "name": "Configure Jest coverage thresholds to enforce quality gates",
+        "setting": "jest.config.js: coverageThreshold: { global: { statements: 80, branches: 80, functions: 80, lines: 80 } }",
+        "values": {
+          "recommended": "80% for all metrics (statements, branches, functions, lines)",
+          "minimum": "Never below 70% for any metric",
+          "aspirational": "90%+ for critical packages"
+        },
+        "impact": "Prevents merging code that reduces coverage below threshold",
+        "environment": "All TypeScript/JavaScript projects",
+        "pitfalls": [
+          "Don't set different thresholds for different metrics (keeps standards consistent)",
+          "Don't set threshold too low (encourages poor testing)",
+          "Don't forget to set branch coverage (most commonly missed)"
+        ],
+        "examples": [
+          {
+            "mistake": "branches: 55 (allows poor coverage)",
+            "fix": "branches: 80 (enforces quality)"
+          }
+        ],
+        "tags": ["jest", "coverage", "quality-gates"],
+        "priority": "high"
+      }
+    ]
+  }
+}
