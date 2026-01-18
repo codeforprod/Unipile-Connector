@@ -508,13 +508,10 @@ describe('HttpClient', () => {
         json: jest.fn().mockResolvedValue({ message: 'Internal server error' }),
       });
 
-      try {
-        await httpClient.get('/test');
-        fail('Expected error to be thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(UnipileError);
-        expect((error as UnipileError).isRetryable).toBe(true);
-      }
+      await expect(httpClient.get('/test')).rejects.toMatchObject({
+        constructor: UnipileError,
+        isRetryable: true,
+      });
     });
 
     it('should throw non-retryable UnipileError for other 4xx errors', async () => {
@@ -526,13 +523,10 @@ describe('HttpClient', () => {
         json: jest.fn().mockResolvedValue({ message: 'Method not allowed' }),
       });
 
-      try {
-        await httpClient.get('/test');
-        fail('Expected error to be thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(UnipileError);
-        expect((error as UnipileError).isRetryable).toBe(false);
-      }
+      await expect(httpClient.get('/test')).rejects.toMatchObject({
+        constructor: UnipileError,
+        isRetryable: false,
+      });
     });
   });
 
@@ -558,13 +552,10 @@ describe('HttpClient', () => {
         json: jest.fn().mockResolvedValue({ error: 'Field level error' }),
       });
 
-      try {
-        await httpClient.get('/test');
-        fail('Expected error to be thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(ValidationError);
-        expect((error as ValidationError).message).toBe('Field level error');
-      }
+      await expect(httpClient.get('/test')).rejects.toMatchObject({
+        constructor: ValidationError,
+        message: 'Field level error',
+      });
     });
 
     it('should extract error message from error_description field', async () => {
@@ -576,13 +567,10 @@ describe('HttpClient', () => {
         json: jest.fn().mockResolvedValue({ error_description: 'OAuth error description' }),
       });
 
-      try {
-        await httpClient.get('/test');
-        fail('Expected error to be thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(ValidationError);
-        expect((error as ValidationError).message).toBe('OAuth error description');
-      }
+      await expect(httpClient.get('/test')).rejects.toMatchObject({
+        constructor: ValidationError,
+        message: 'OAuth error description',
+      });
     });
 
     it('should use fallback message when body has no message fields', async () => {
@@ -594,13 +582,10 @@ describe('HttpClient', () => {
         json: jest.fn().mockResolvedValue({}),
       });
 
-      try {
-        await httpClient.get('/test');
-        fail('Expected error to be thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(ValidationError);
-        expect((error as ValidationError).message).toBe('Validation failed');
-      }
+      await expect(httpClient.get('/test')).rejects.toMatchObject({
+        constructor: ValidationError,
+        message: 'Validation failed',
+      });
     });
 
     it('should handle non-JSON error response body', async () => {

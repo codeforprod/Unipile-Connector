@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto';
 import type { HttpClient } from '../http/http-client.js';
 import type { Webhook, CreateWebhookRequest, PaginatedResponse } from '../interfaces/index.js';
 
@@ -96,21 +97,14 @@ export class WebhookService {
   }
 
   /**
-   * Computes HMAC-SHA256 signature.
-   * Note: This is a simplified implementation. In production,
-   * use Node.js crypto or Web Crypto API.
+   * Computes HMAC-SHA256 signature for webhook payload.
+   * @param payload - Raw webhook payload
+   * @param secret - Webhook secret
+   * @returns HMAC signature in hex format
+   * @internal
    */
   private computeHmac(payload: string, secret: string): string {
-    // This is a placeholder - actual implementation would use:
-    // Node.js: crypto.createHmac('sha256', secret).update(payload).digest('hex')
-    // Browser: await crypto.subtle.sign('HMAC', key, data)
-
-    // For now, return empty string to indicate implementation needed
-    // The actual HMAC computation should be done in the consuming application
-    // based on their runtime environment
-    void payload;
-    void secret;
-    return '';
+    return createHmac('sha256', secret).update(payload).digest('hex');
   }
 
   /**

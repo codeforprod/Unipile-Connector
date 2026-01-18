@@ -123,7 +123,7 @@ export interface LinkedInPosition {
   startDate?: string;
 
   /** End date (null if current) */
-  endDate?: string;
+  endDate?: string | null;
 
   /** Is current position */
   isCurrent: boolean;

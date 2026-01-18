@@ -39,23 +39,23 @@ const accounts = await client.accounts.list({ limit: 10 });
 const account = await client.accounts.get('account-123');
 
 // Connect with OAuth
-const result = await client.accounts.connectOAuth({
+const oauthResult = await client.accounts.connectOAuth({
   provider: AccountProvider.GMAIL,
   code: 'oauth-code',
   redirectUri: 'https://yourapp.com/callback',
 });
 
 // Connect with credentials
-const result = await client.accounts.connectCredentials({
+const credResult = await client.accounts.connectCredentials({
   provider: AccountProvider.LINKEDIN,
   username: 'user@example.com',
   password: 'password',
 });
 
 // Handle checkpoint (2FA)
-if (client.accounts.isCheckpoint(result)) {
-  const account = await client.accounts.resolveCheckpoint({
-    accountId: result.accountId,
+if (client.accounts.isCheckpoint(credResult)) {
+  const resolvedAccount = await client.accounts.resolveCheckpoint({
+    accountId: credResult.accountId,
     type: CheckpointType.OTP,
     code: '123456',
   });

@@ -35,13 +35,14 @@ describe('RateLimiter', () => {
       expect(waitTime).toBeLessThanOrEqual(5000);
     });
 
-    it('should return 0 after reset time passes when no exponential backoff', () => {
-      // When resetAt is provided, exponential backoff is not applied
+    it('should apply exponential backoff after reset time passes', () => {
+      // When resetAt is provided, exponential backoff is not applied until reset time passes
       const resetAt = new Date(Date.now() - 1000); // Already passed
       rateLimiter.recordRateLimitError('account-1', resetAt);
       const waitTime = rateLimiter.shouldWait('account-1');
       // Should still have backoff since consecutiveErrors > 0 and baseDelay is used
       // After reset time clears, exponential backoff (currentBackoffMs) applies
+      expect(waitTime).toBeGreaterThan(0);
       expect(waitTime).toBeLessThanOrEqual(1000);
     });
   });

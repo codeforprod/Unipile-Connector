@@ -56,8 +56,8 @@ describe('Inject Decorators', () => {
 
   it('should inject UnipileClient via @InjectUnipileClient()', () => {
     expect(testService.client).toBeDefined();
-    expect(typeof testService.client.accounts).toBeDefined();
-    expect(typeof testService.client.email).toBeDefined();
+    expect(testService.client.accounts).toBeDefined();
+    expect(testService.client.email).toBeDefined();
   });
 
   it('should inject AccountService via @InjectAccountService()', () => {

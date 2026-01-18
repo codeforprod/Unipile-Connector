@@ -446,7 +446,7 @@ However, the **critical gap in branch coverage** (59.56% vs 80% requirement) in 
 
 ### @unipile/core Detailed Coverage
 
-```
+```text
 File                           | % Stmts | % Branch | % Funcs | % Lines |
 -------------------------------|---------|----------|---------|---------|
 All files                      |   82.78 |    59.56 |   86.23 |   83.29 |
@@ -470,7 +470,7 @@ services/webhook.service.ts    |   83.33 |    42.85 |     100 |    86.2 |
 
 ### @unipile/nestjs Detailed Coverage
 
-```
+```text
 File                          | % Stmts | % Branch | % Funcs | % Lines |
 ------------------------------|---------|----------|---------|---------|
 All files                     |   97.87 |    93.75 |     100 |    97.5 |

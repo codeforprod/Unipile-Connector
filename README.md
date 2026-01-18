@@ -255,7 +255,7 @@ pnpm lint
 
 ### Project Structure
 
-```
+```text
 unipile-connector/
 ├── packages/
 │   ├── core/           # Framework-agnostic client

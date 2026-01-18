@@ -143,6 +143,9 @@ export interface StartChatRequest {
  * Send message request.
  */
 export interface SendMessageRequest {
+  /** Account ID for rate limiting */
+  accountId: string;
+
   /** Chat ID to send to */
   chatId: string;
 
@@ -174,6 +177,9 @@ export interface ListChatsOptions extends PaginationOptions {
  * List messages request options.
  */
 export interface ListMessagesOptions extends PaginationOptions {
+  /** Account ID for rate limiting */
+  accountId: string;
+
   /** Chat ID */
   chatId: string;
 

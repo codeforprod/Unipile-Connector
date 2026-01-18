@@ -7,7 +7,7 @@
   "author": "AIRIS Team",
   "repository": {
     "type": "git",
-    "url": "https://github.com/airis/unipile-connector"
+    "url": "https://github.com/codeforprod/Unipile-Connector"
   },
   "engines": {
     "node": ">=18.0.0",

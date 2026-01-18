@@ -284,10 +284,10 @@ export class HttpClient {
     let data: T;
     const contentType = response.headers.get('content-type');
 
-    if (contentType?.includes('application/json') === true) {
-      data = (await response.json()) as T;
-    } else if (response.status === 204) {
+    if (response.status === 204) {
       data = undefined as T;
+    } else if (contentType?.includes('application/json') === true) {
+      data = (await response.json()) as T;
     } else {
       data = (await response.text()) as T;
     }

@@ -123,6 +123,7 @@ export class MessagingService {
         limit: options.limit,
         cursor: options.cursor,
       },
+      options.accountId,
     );
 
     return {
@@ -135,11 +136,14 @@ export class MessagingService {
    * Gets a specific message by ID.
    * @param chatId - Chat identifier
    * @param messageId - Message identifier
+   * @param accountId - Account identifier for rate limiting
    * @returns Message details
    */
-  async getMessage(chatId: string, messageId: string): Promise<Message> {
+  async getMessage(chatId: string, messageId: string, accountId: string): Promise<Message> {
     const response = await this.httpClient.get<Message>(
       `/api/v1/chats/${chatId}/messages/${messageId}`,
+      {},
+      accountId,
     );
     return response.data;
   }
@@ -161,6 +165,7 @@ export class MessagingService {
         })),
         reply_to: request.replyTo,
       },
+      request.accountId,
     );
     return response.data;
   }
@@ -168,11 +173,14 @@ export class MessagingService {
   /**
    * Lists attendees/participants in a chat.
    * @param chatId - Chat identifier
+   * @param accountId - Account identifier for rate limiting
    * @returns List of chat attendees
    */
-  async listAttendees(chatId: string): Promise<ChatAttendee[]> {
+  async listAttendees(chatId: string, accountId: string): Promise<ChatAttendee[]> {
     const response = await this.httpClient.get<AttendeeListResponse>(
       `/api/v1/chats/${chatId}/attendees`,
+      {},
+      accountId,
     );
     return response.data.items ?? response.data.attendees ?? [];
   }
@@ -181,11 +189,14 @@ export class MessagingService {
    * Gets profile picture URL for an attendee.
    * @param chatId - Chat identifier
    * @param attendeeId - Attendee identifier
+   * @param accountId - Account identifier for rate limiting
    * @returns Profile picture URL
    */
-  async getAttendeePicture(chatId: string, attendeeId: string): Promise<string> {
+  async getAttendeePicture(chatId: string, attendeeId: string, accountId: string): Promise<string> {
     const response = await this.httpClient.get<{ url: string }>(
       `/api/v1/chats/${chatId}/attendees/${attendeeId}/picture`,
+      {},
+      accountId,
     );
     return response.data.url;
   }
