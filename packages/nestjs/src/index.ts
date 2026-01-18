@@ -1,0 +1,130 @@
+// Module
+export { UnipileModule } from './unipile.module.js';
+
+// Interfaces
+export type {
+  UnipileModuleOptions,
+  UnipileOptionsFactory,
+  UnipileModuleAsyncOptions,
+} from './interfaces/index.js';
+
+// Decorators
+export {
+  InjectUnipileClient,
+  InjectAccountService,
+  InjectEmailService,
+  InjectMessagingService,
+  InjectLinkedInService,
+  InjectWebhookService,
+} from './decorators/index.js';
+
+// Constants
+export {
+  UNIPILE_MODULE_OPTIONS,
+  UNIPILE_CLIENT,
+  UNIPILE_ACCOUNT_SERVICE,
+  UNIPILE_EMAIL_SERVICE,
+  UNIPILE_MESSAGING_SERVICE,
+  UNIPILE_LINKEDIN_SERVICE,
+  UNIPILE_WEBHOOK_SERVICE,
+} from './constants.js';
+
+// Re-export from core for convenience
+export {
+  UnipileClient,
+  AccountService,
+  EmailService,
+  MessagingService,
+  LinkedInService,
+  WebhookService,
+  HttpClient,
+  RateLimiter,
+  // Enums
+  AccountStatus,
+  AccountProvider,
+  WebhookSource,
+  WebhookEvent,
+  CheckpointType,
+  ErrorCategory,
+  LinkedInSearchType,
+  // Errors
+  UnipileError,
+  TimeoutError,
+  ConnectionError,
+  RateLimitError,
+  AuthError,
+  ValidationError,
+  NotFoundError,
+  // Config
+  DEFAULT_CONFIG,
+} from '@unipile/core';
+
+// Re-export types from core
+export type {
+  UnipileConfig,
+  PaginatedResponse,
+  PaginationOptions,
+  ApiResponse,
+  Attachment,
+  DateRange,
+  Account,
+  OAuthConnectRequest,
+  CredentialsConnectRequest,
+  CookieConnectRequest,
+  QrCodeConnectRequest,
+  ImapConnectRequest,
+  Checkpoint,
+  CheckpointResolveRequest,
+  HostedAuthLink,
+  CreateHostedAuthLinkRequest,
+  ReconnectAccountRequest,
+  EmailAddress,
+  Email,
+  EmailTracking,
+  LinkClick,
+  SendEmailRequest,
+  UpdateEmailRequest,
+  EmailFolder,
+  ListEmailsOptions,
+  CreateDraftRequest,
+  ChatAttendee,
+  Chat,
+  Message,
+  MessageDeliveryStatus,
+  MessageReaction,
+  StartChatRequest,
+  SendMessageRequest,
+  ListChatsOptions,
+  ListMessagesOptions,
+  SendInMailRequest,
+  InMailCreditBalance,
+  LinkedInCompany,
+  LinkedInPerson,
+  LinkedInPosition,
+  LinkedInEducation,
+  LinkedInLocation,
+  CompanySearchFilters,
+  PeopleSearchFilters,
+  CompanySearchRequest,
+  PeopleSearchRequest,
+  CompanySearchResult,
+  PeopleSearchResult,
+  SearchParameterValue,
+  SearchParameterType,
+  GetSearchParametersRequest,
+  EnrichCompanyRequest,
+  EnrichPersonRequest,
+  Webhook,
+  CreateWebhookRequest,
+  MessageReceivedPayload,
+  MailSentPayload,
+  MailOpenedPayload,
+  LinkClickedPayload,
+  AccountStatusChangedPayload,
+  WebhookPayload,
+  WebhookDelivery,
+  ErrorContext,
+  ValidationErrorDetail,
+  RequestOptions,
+  HttpResponse,
+} from '@unipile/core';
