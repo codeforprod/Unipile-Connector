@@ -1,10 +1,9 @@
 {
   "name": "unipile-connector",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "description": "Universal NPM package for Unipile integration - Email, Messaging, and LinkedIn Sales Navigator",
   "license": "MIT",
-  "author": "AIRIS Team",
   "repository": {
     "type": "git",
     "url": "https://github.com/codeforprod/Unipile-Connector"
