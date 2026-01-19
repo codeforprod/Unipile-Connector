@@ -1,15 +1,15 @@
-# @unipile/nestjs
+# @prodforcode/unipile-nestjs
 
 NestJS dynamic module for Unipile API integration with dependency injection support.
 
 ## Installation
 
 ```bash
-npm install @unipile/nestjs @unipile/core
+npm install @prodforcode/unipile-nestjs @prodforcode/unipile-core
 # or
-pnpm add @unipile/nestjs @unipile/core
+pnpm add @prodforcode/unipile-nestjs @prodforcode/unipile-core
 # or
-yarn add @unipile/nestjs @unipile/core
+yarn add @prodforcode/unipile-nestjs @prodforcode/unipile-core
 ```
 
 ## Quick Start
@@ -18,7 +18,7 @@ yarn add @unipile/nestjs @unipile/core
 
 ```typescript
 import { Module } from '@nestjs/common';
-import { UnipileModule } from '@unipile/nestjs';
+import { UnipileModule } from '@prodforcode/unipile-nestjs';
 
 @Module({
   imports: [
@@ -37,7 +37,7 @@ export class AppModule {}
 ```typescript
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { UnipileModule } from '@unipile/nestjs';
+import { UnipileModule } from '@prodforcode/unipile-nestjs';
 
 @Module({
   imports: [
@@ -63,7 +63,7 @@ export class AppModule {}
 ```typescript
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { UnipileOptionsFactory, UnipileModuleOptions } from '@unipile/nestjs';
+import { UnipileOptionsFactory, UnipileModuleOptions } from '@prodforcode/unipile-nestjs';
 
 @Injectable()
 class UnipileConfigService implements UnipileOptionsFactory {
@@ -109,7 +109,7 @@ import {
   MessagingService,
   LinkedInService,
   WebhookService,
-} from '@unipile/nestjs';
+} from '@prodforcode/unipile-nestjs';
 
 @Injectable()
 export class MyService {
@@ -156,7 +156,7 @@ import {
   SendEmailRequest,
   Account,
   PaginatedResponse,
-} from '@unipile/nestjs';
+} from '@prodforcode/unipile-nestjs';
 
 @Controller('unipile')
 export class UnipileController {
@@ -191,7 +191,7 @@ import {
   WebhookService,
   MessageReceivedPayload,
   WebhookEvent,
-} from '@unipile/nestjs';
+} from '@prodforcode/unipile-nestjs';
 
 @Controller('webhooks')
 export class WebhookController {
@@ -256,7 +256,7 @@ interface UnipileModuleOptions {
 
 ## Re-exports
 
-This package re-exports everything from `@unipile/core` for convenience:
+This package re-exports everything from `@prodforcode/unipile-core` for convenience:
 
 ```typescript
 import {
@@ -285,7 +285,7 @@ import {
   AuthError,
   ValidationError,
   NotFoundError,
-} from '@unipile/nestjs';
+} from '@prodforcode/unipile-nestjs';
 ```
 
 ## License

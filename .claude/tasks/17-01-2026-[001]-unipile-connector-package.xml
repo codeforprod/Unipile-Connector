@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<task>
+  <metadata>
+    <id>17-01-2026-[001]</id>
+    <slug>unipile-connector-package</slug>
+    <title>Create Unipile Connector NPM Package</title>
+    <priority>high</priority>
+    <created>2026-01-17</created>
+    <project>Unipile-Connector</project>
+    <jira_project>AIRIS</jira_project>
+  </metadata>
+
+  <assignment>
+    <agent>@~/.claude/agents/TECHNICAL_LEAD_PROMPT.xml</agent>
+    <knowledge_base>/Users/oleksii/Projects/Node/CallAiris/Unipile-Connector/.claude/knowledge-base/unipile-connector-package-kb.md</knowledge_base>
+  </assignment>
+
+  <summary>
+    Build a universal NPM package for Unipile integration providing email operations,
+    social network messaging capabilities, and LinkedIn Sales Navigator features.
+    The package will consolidate all existing Holocron Legacy Unipile features into
+    a reusable, well-typed monorepo with framework-agnostic core and NestJS integration.
+  </summary>
+
+  <context>
+    <target_projects>
+      <project name="Holocron v2">New backend version requiring Unipile integration</project>
+      <project name="CallAiris (AIRIS)">Voice AI automation system requiring email/messaging</project>
+    </target_projects>
+
+    <package_structure>
+      <package name="@unipile/core">Framework-agnostic services and interfaces</package>
+      <package name="@unipile/nestjs">NestJS Dynamic Module integration</package>
+    </package_structure>
+
+    <supported_platforms>
+      <messaging>LinkedIn, WhatsApp, Instagram, Messenger, Telegram, Twitter/X, Slack</messaging>
+      <email>Gmail (OAuth), Outlook (OAuth), iCloud, Exchange, Generic IMAP</email>
+    </supported_platforms>
+  </context>
+
+  <requirements>
+    <functional>
+      <requirement id="FR-001" category="email">
+        <title>Email Send Operations</title>
+        <description>Send emails with HTML/plain text body, attachments (Buffer-based),
+        reply threading via reply_to, and CC/BCC recipients support.</description>
+        <acceptance>Emails send successfully with all attachment types, threading works correctly.</acceptance>
+      </requirement>
+
+      <requirement id="FR-002" category="email">
+        <title>Email Tracking</title>
+        <description>Support email tracking for opens and link clicks with real-time status updates.</description>
+        <acceptance>Tracking events fire correctly and can be received via webhooks.</acceptance>
+      </requirement>
+
+      <requirement id="FR-003" category="email">
+        <title>Email Management</title>
+        <description>List, retrieve, update, and delete emails. Folder management for organizing emails.</description>
+        <acceptance>All CRUD operations work with pagination support.</acceptance>
+      </requirement>
+
+      <requirement id="FR-004" category="messaging">
+        <title>Chat Operations</title>
+        <description>Start new chats on all supported platforms (LinkedIn, WhatsApp, Instagram,
+        Messenger, Telegram, Twitter/X, Slack). Send messages to existing chats with attachment support.</description>
+        <acceptance>Chat creation and messaging works on all 7 platforms.</acceptance>
+      </requirement>
+
+      <requirement id="FR-005" category="messaging">
+        <title>LinkedIn Advanced Messaging</title>
+        <description>Support LinkedIn InMail, Sales Navigator messaging, and Recruiter API integration.</description>
+        <acceptance>LinkedIn-specific messaging features work with proper profile linking.</acceptance>
+      </requirement>
+
+      <requirement id="FR-006" category="messaging">
+        <title>Chat History</title>
+        <description>Get chat history with cursor-based pagination. List attendees/contacts in chats.</description>
+        <acceptance>Pagination returns consistent results, all attendees retrievable.</acceptance>
+      </requirement>
+
+      <requirement id="FR-007" category="linkedin">
+        <title>Company Search</title>
+        <description>LinkedIn Sales Navigator company search with 15+ filters (industry, location,
+        headcount, revenue, technologies, etc.). Migrate from Holocron Legacy implementation.</description>
+        <acceptance>All company search filters work, results match Holocron Legacy behavior.</acceptance>
+      </requirement>
+
+      <requirement id="FR-008" category="linkedin">
+        <title>Employee/People Search</title>
+        <description>LinkedIn Sales Navigator people search with role, location, company,
+        and seniority filters. Migrate from Holocron Legacy implementation.</description>
+        <acceptance>All people search filters work, results match Holocron Legacy behavior.</acceptance>
+      </requirement>
+
+      <requirement id="FR-009" category="linkedin">
+        <title>Profile Enrichment</title>
+        <description>Company profile retrieval with full details. Person profile retrieval
+        with experience, headline, location data.</description>
+        <acceptance>Full profile data returned matching API documentation.</acceptance>
+      </requirement>
+
+      <requirement id="FR-010" category="linkedin">
+        <title>Search Parameter Enumeration</title>
+        <description>Retrieve available search parameters for dynamic dropdown population
+        (industries, technologies, locations, etc.).</description>
+        <acceptance>All parameter types return valid options for UI dropdowns.</acceptance>
+      </requirement>
+
+      <requirement id="FR-011" category="accounts">
+        <title>Account Connection</title>
+        <description>Connect accounts via OAuth, credentials, cookies, and QR codes
+        depending on platform requirements.</description>
+        <acceptance>All connection methods work for supported platforms.</acceptance>
+      </requirement>
+
+      <requirement id="FR-012" category="accounts">
+        <title>2FA/Checkpoint Handling</title>
+        <description>Handle two-factor authentication including OTP, in-app validation,
+        and CAPTCHA solving flows.</description>
+        <acceptance>2FA flows complete successfully with proper state management.</acceptance>
+      </requirement>
+
+      <requirement id="FR-013" category="accounts">
+        <title>Account Management</title>
+        <description>Reconnect disconnected accounts, monitor account status, delete accounts.</description>
+        <acceptance>Status values (OK, CONNECTING, CREDENTIALS, PERMISSIONS, ERROR, STOPPED) handled correctly.</acceptance>
+      </requirement>
+
+      <requirement id="FR-014" category="accounts">
+        <title>Hosted Auth Links</title>
+        <description>Create hosted authentication links for OAuth flows that redirect to application URLs.</description>
+        <acceptance>Auth links generated and callback URLs work correctly.</acceptance>
+      </requirement>
+
+      <requirement id="FR-015" category="webhooks">
+        <title>Webhook Management</title>
+        <description>Create and delete webhooks for sources: messaging, email, email_tracking, account_status.</description>
+        <acceptance>Webhooks register and unregister correctly.</acceptance>
+      </requirement>
+
+      <requirement id="FR-016" category="webhooks">
+        <title>Webhook Events</title>
+        <description>Receive real-time events: message_received, mail_sent, mail_opened,
+        link_clicked, account_status_changed. Support custom headers and field mapping.</description>
+        <acceptance>All event types received correctly with proper payload structure.</acceptance>
+      </requirement>
+    </functional>
+
+    <technical>
+      <requirement id="TR-001" category="architecture">
+        <title>Monorepo Structure</title>
+        <description>Initialize monorepo with pnpm workspaces and Turborepo for build orchestration.
+        Separate packages for core (framework-agnostic) and nestjs (integration).</description>
+        <acceptance>Both packages build independently, workspace dependencies resolve correctly.</acceptance>
+      </requirement>
+
+      <requirement id="TR-002" category="typescript">
+        <title>TypeScript Strict Mode</title>
+        <description>Enable strict mode with full type definitions. No any types in public APIs.
+        Export all interfaces for consumer type safety.</description>
+        <acceptance>tsc --noEmit passes with zero errors, all public APIs fully typed.</acceptance>
+      </requirement>
+
+      <requirement id="TR-003" category="nestjs">
+        <title>NestJS Dynamic Module</title>
+        <description>Implement forRoot() and forRootAsync() patterns for module configuration.
+        Support dependency injection for all services.</description>
+        <acceptance>Module configures correctly with sync and async options.</acceptance>
+      </requirement>
+
+      <requirement id="TR-004" category="testing">
+        <title>Test Coverage</title>
+        <description>Jest with ts-jest configuration. 80% coverage threshold enforced.
+        Unit tests colocated with source files.</description>
+        <acceptance>jest --coverage shows >= 80% for lines, functions, branches.</acceptance>
+      </requirement>
+
+      <requirement id="TR-005" category="error-handling">
+        <title>Rate Limiting</title>
+        <description>Implement rate limit detection from response headers (429 status).
+        Exponential backoff with configurable base (5min) and max (2h) cooldown.</description>
+        <acceptance>Rate limits detected, backoff calculated correctly, requests retry automatically.</acceptance>
+      </requirement>
+
+      <requirement id="TR-006" category="error-handling">
+        <title>Error Categorization</title>
+        <description>Categorize errors: timeout, connection, rate_limit, auth, unknown.
+        Provide retryable flag and suggested retry delay.</description>
+        <acceptance>All error types categorized correctly with appropriate metadata.</acceptance>
+      </requirement>
+
+      <requirement id="TR-007" category="multi-tenant">
+        <title>Account Isolation</title>
+        <description>All operations scoped to accountId parameter. No cross-tenant data leakage.
+        Per-account rate limit tracking.</description>
+        <acceptance>Operations isolated, rate limits tracked per account.</acceptance>
+      </requirement>
+
+      <requirement id="TR-008" category="http">
+        <title>HTTP Client</title>
+        <description>Framework-agnostic HTTP client using native fetch API.
+        Configurable timeout, headers, retry behavior.</description>
+        <acceptance>HTTP client works without framework dependencies.</acceptance>
+      </requirement>
+
+      <requirement id="TR-009" category="documentation">
+        <title>JSDoc Documentation</title>
+        <description>All public APIs documented with JSDoc including parameter descriptions,
+        return types, and usage examples.</description>
+        <acceptance>TypeDoc generates complete API documentation.</acceptance>
+      </requirement>
+
+      <requirement id="TR-010" category="documentation">
+        <title>README Documentation</title>
+        <description>Comprehensive README with quick start, configuration reference,
+        and migration guide from Holocron Legacy.</description>
+        <acceptance>New users can install and configure within 15 minutes.</acceptance>
+      </requirement>
+
+      <requirement id="TR-011" category="publishing">
+        <title>NPM Publishing</title>
+        <description>Configure changesets for version management. CI/CD pipeline for
+        automated publishing on release.</description>
+        <acceptance>npm publish succeeds, packages available on registry.</acceptance>
+      </requirement>
+
+      <requirement id="TR-012" category="compatibility">
+        <title>NestJS Version Support</title>
+        <description>Support NestJS versions 10.x and 11.x via peer dependencies.
+        Test against both major versions.</description>
+        <acceptance>Package works with both NestJS 10 and 11 projects.</acceptance>
+      </requirement>
+    </technical>
+  </requirements>
+
+  <implementation_steps>
+    <phase number="1" name="Monorepo Initialization" estimated_days="1">
+      <step>Initialize pnpm workspace with packages/core and packages/nestjs</step>
+      <step>Configure Turborepo for build orchestration</step>
+      <step>Set up shared TypeScript configuration with strict mode</step>
+      <step>Configure ESLint and Prettier with shared rules</step>
+      <step>Set up Jest with ts-jest and coverage thresholds</step>
+      <step>Create root package.json with workspace scripts</step>
+    </phase>
+
+    <phase number="2" name="Core Package - HTTP Layer" estimated_days="1">
+      <step>Implement UnipileHttpClient with configurable base URL and API key</step>
+      <step>Add request timeout handling with configurable duration</step>
+      <step>Implement rate limit detection from 429 responses and headers</step>
+      <step>Create exponential backoff calculator with base/max cooldown</step>
+      <step>Define UnipileError class hierarchy (RateLimitError, AuthError, etc.)</step>
+      <step>Write unit tests for HTTP client (mock fetch)</step>
+    </phase>
+
+    <phase number="3" name="Core Package - Interfaces" estimated_days="1">
+      <step>Define email interfaces (SendEmailInput, Email, Folder, etc.)</step>
+      <step>Define messaging interfaces (Chat, Message, Attendee, etc.)</step>
+      <step>Define account interfaces (Account, ConnectResult, CheckpointInput)</step>
+      <step>Define webhook interfaces (Webhook, WebhookSource, WebhookEvent)</step>
+      <step>Define LinkedIn interfaces (CompanySearchFilters, PersonProfile, etc.)</step>
+      <step>Create barrel exports in index.ts files</step>
+    </phase>
+
+    <phase number="4" name="Core Package - Services" estimated_days="2">
+      <step>Implement EmailService with all CRUD operations</step>
+      <step>Implement MessagingService with chat/message operations</step>
+      <step>Implement AccountService with connection/checkpoint flows</step>
+      <step>Implement WebhookService with CRUD operations</step>
+      <step>Port LinkedInService from Holocron Legacy with all search methods</step>
+      <step>Add pagination handling with cursor support</step>
+      <step>Write unit tests for all services (mock HTTP client)</step>
+    </phase>
+
+    <phase number="5" name="NestJS Module" estimated_days="1">
+      <step>Define UnipileModuleOptions and UnipileModuleAsyncOptions interfaces</step>
+      <step>Create injection tokens (UNIPILE_OPTIONS, UNIPILE_HTTP_CLIENT)</step>
+      <step>Implement UnipileModule.forRoot() static method</step>
+      <step>Implement UnipileModule.forRootAsync() with useFactory/useClass support</step>
+      <step>Create providers for all core services with proper scoping</step>
+      <step>Add InjectUnipile decorator for service injection</step>
+      <step>Write integration tests with NestJS testing module</step>
+    </phase>
+
+    <phase number="6" name="Testing &amp; Quality" estimated_days="1">
+      <step>Achieve 80% test coverage across both packages</step>
+      <step>Create integration test examples with mock server</step>
+      <step>Run type checking with tsc --noEmit</step>
+      <step>Run linting with ESLint --fix</step>
+      <step>Verify builds complete without errors</step>
+    </phase>
+
+    <phase number="7" name="Documentation &amp; Publishing" estimated_days="1">
+      <step>Write comprehensive README with installation instructions</step>
+      <step>Document configuration options with examples</step>
+      <step>Create migration guide from Holocron Legacy</step>
+      <step>Add JSDoc to all public APIs</step>
+      <step>Configure changesets for version management</step>
+      <step>Set up GitHub Actions for CI/CD</step>
+      <step>Publish initial version to NPM</step>
+    </phase>
+  </implementation_steps>
+
+  <acceptance_criteria>
+    <criterion id="AC-001">Package Structure: Monorepo with @unipile/core and @unipile/nestjs packages building successfully</criterion>
+    <criterion id="AC-002">Email Operations: Send, receive, track, and manage emails with attachments working</criterion>
+    <criterion id="AC-003">Messaging Operations: Start chats and send messages on all 7 platforms</criterion>
+    <criterion id="AC-004">LinkedIn Features: All Holocron Legacy Unipile features migrated and functional</criterion>
+    <criterion id="AC-005">Account Management: OAuth, credentials, and 2FA flows completing successfully</criterion>
+    <criterion id="AC-006">Webhook Integration: Create webhooks and receive real-time events</criterion>
+    <criterion id="AC-007">NestJS Module: forRoot/forRootAsync configuration working in test application</criterion>
+    <criterion id="AC-008">TypeScript: Strict mode enabled, no any types in public APIs</criterion>
+    <criterion id="AC-009">Test Coverage: Jest reports >= 80% coverage on lines, functions, branches</criterion>
+    <criterion id="AC-010">Rate Limiting: Exponential backoff working with per-account tracking</criterion>
+    <criterion id="AC-011">Documentation: README with quick start, JSDoc on all public methods</criterion>
+    <criterion id="AC-012">Publishing: Packages published to NPM registry successfully</criterion>
+  </acceptance_criteria>
+
+  <dependencies>
+    <dependency type="environment">
+      <name>UNIPILE_DSN</name>
+      <required>true</required>
+      <description>Unipile API domain:port (e.g., api6.unipile.com:13624)</description>
+    </dependency>
+    <dependency type="environment">
+      <name>UNIPILE_API_KEY</name>
+      <required>true</required>
+      <description>Unipile API access token</description>
+    </dependency>
+    <dependency type="environment">
+      <name>UNIPILE_USE_HTTP</name>
+      <required>false</required>
+      <description>Use HTTP instead of HTTPS (default: false)</description>
+    </dependency>
+    <dependency type="package">
+      <name>reflect-metadata</name>
+      <version>^0.2.1</version>
+      <description>Required for TypeScript decorators</description>
+    </dependency>
+    <dependency type="peer">
+      <name>@nestjs/common</name>
+      <version>^10.0.0 || ^11.0.0</version>
+      <description>NestJS common module (peer dependency)</description>
+    </dependency>
+    <dependency type="peer">
+      <name>@nestjs/core</name>
+      <version>^10.0.0 || ^11.0.0</version>
+      <description>NestJS core module (peer dependency)</description>
+    </dependency>
+  </dependencies>
+
+  <risks>
+    <risk severity="high" likelihood="low">
+      <title>API Breaking Changes</title>
+      <description>Unipile API may introduce breaking changes</description>
+      <mitigation>Pin SDK version, add integration tests, monitor changelog</mitigation>
+    </risk>
+    <risk severity="medium" likelihood="medium">
+      <title>Rate Limit Issues</title>
+      <description>Heavy usage may trigger rate limits affecting user experience</description>
+      <mitigation>Implement exponential backoff with per-account tracking</mitigation>
+    </risk>
+    <risk severity="low" likelihood="medium">
+      <title>Type Mismatches</title>
+      <description>API response types may not match documentation</description>
+      <mitigation>Use official SDK types, add runtime validation</mitigation>
+    </risk>
+    <risk severity="high" likelihood="low">
+      <title>Multi-tenant Data Leakage</title>
+      <description>Improper isolation may expose data across accounts</description>
+      <mitigation>Scope all operations to accountId, add isolation tests</mitigation>
+    </risk>
+  </risks>
+
+  <file_mapping>
+    <mapping source="Holocron: src/external/unipile/unipile.service.ts" target="@unipile/core/services/linkedin.service.ts"/>
+    <mapping source="Holocron: src/external/unipile/unipile.types.ts" target="@unipile/core/interfaces/*.interface.ts"/>
+    <mapping source="Holocron: src/external/unipile/unipile.fetch.ts" target="@unipile/core/http/unipile-http.client.ts"/>
+    <mapping source="Holocron: src/external/unipile/unipile.helpers.ts" target="@unipile/core/utils/"/>
+  </file_mapping>
+
+  <notes>
+    <note type="reference">Knowledge Base: /Users/oleksii/Projects/Node/CallAiris/Unipile-Connector/.claude/knowledge-base/unipile-connector-package-kb.md</note>
+    <note type="pattern">Follow EventForge package patterns for monorepo structure</note>
+    <note type="migration">Holocron Legacy code provides battle-tested LinkedIn implementation</note>
+  </notes>
+</task>

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<task_assignment>
+  <header>
+    <task_id>19-01-2026-[001]-cicd-pipeline-implementation</task_id>
+    <project_name>Unipile-Connector</project_name>
+    <target_agent_role>Technical Lead</target_agent_role>
+    <target_agent_prompt>@~/.claude/agents/TECHNICAL_LEAD_PROMPT.xml</target_agent_prompt>
+    <priority>Medium</priority>
+    <created_date>2026-01-19</created_date>
+    <labels>
+      <label>ci-cd</label>
+      <label>github-actions</label>
+      <label>automation</label>
+      <label>devops</label>
+      <label>changesets</label>
+    </labels>
+  </header>
+
+  <objective>
+    <summary>Implement a complete CI/CD pipeline for the Unipile-Connector monorepo based on proven patterns from Event-Forge.</summary>
+    <description>
+      The pipeline will include:
+      1. Continuous Integration workflow (build, test, lint, typecheck) triggered on PRs and pushes
+      2. Automated Release workflow using Changesets for semantic versioning and NPM publishing
+      3. Smart concurrency control (cancel redundant PRs, never cancel releases)
+      4. npm pack verification to ensure dist/ files are included in published packages
+    </description>
+  </objective>
+
+  <requirements>
+    <functional_requirements>
+      <category name="CI Workflow">
+        <requirement id="CI-FR-001" priority="high">Run on all pull requests to main branch</requirement>
+        <requirement id="CI-FR-002" priority="high">Run on all direct pushes to main branch</requirement>
+        <requirement id="CI-FR-003" priority="high">Build all packages in correct dependency order</requirement>
+        <requirement id="CI-FR-004" priority="high">Run TypeScript type checking (tsc --noEmit)</requirement>
+        <requirement id="CI-FR-005" priority="high">Run ESLint code quality checks</requirement>
+        <requirement id="CI-FR-006" priority="high">Run Jest test suite</requirement>
+        <requirement id="CI-FR-007" priority="high">Verify npm pack includes compiled dist/ files</requirement>
+        <requirement id="CI-FR-008" priority="medium">Cancel redundant PR workflow runs</requirement>
+        <requirement id="CI-FR-009" priority="high">Use pnpm with frozen lockfile for deterministic builds</requirement>
+      </category>
+      <category name="Release Workflow">
+        <requirement id="REL-FR-001" priority="high">Trigger only on main branch pushes</requirement>
+        <requirement id="REL-FR-002" priority="high">Build packages before publishing</requirement>
+        <requirement id="REL-FR-003" priority="high">Use Changesets for semantic versioning</requirement>
+        <requirement id="REL-FR-004" priority="medium">Create GitHub releases with changelogs</requirement>
+        <requirement id="REL-FR-005" priority="high">Publish packages to NPM registry</requirement>
+        <requirement id="REL-FR-006" priority="high">Create automatic version bump PRs</requirement>
+        <requirement id="REL-FR-007" priority="high">Never cancel in-progress release workflows</requirement>
+      </category>
+    </functional_requirements>
+
+    <technical_requirements>
+      <requirement id="TR-001" priority="high">Node.js 20.x runtime environment</requirement>
+      <requirement id="TR-002" priority="high">pnpm 8.15.0 package manager</requirement>
+      <requirement id="TR-003" priority="high">TypeScript 5.3+ compiler</requirement>
+      <requirement id="TR-004" priority="high">Jest 29.x test framework</requirement>
+      <requirement id="TR-005" priority="high">Turbo for build orchestration</requirement>
+      <requirement id="TR-006" priority="high">Changesets for version management</requirement>
+      <requirement id="TR-007" priority="high">actions/checkout@v4</requirement>
+      <requirement id="TR-008" priority="high">actions/setup-node@v4</requirement>
+      <requirement id="TR-009" priority="high">pnpm/action-setup@v4</requirement>
+      <requirement id="TR-010" priority="high">changesets/action@v1</requirement>
+    </technical_requirements>
+  </requirements>
+
+  <acceptance_criteria>
+    <criterion id="AC-001">PR creation triggers CI workflow</criterion>
+    <criterion id="AC-002">Push to main triggers CI workflow</criterion>
+    <criterion id="AC-003">Build completes successfully for all packages</criterion>
+    <criterion id="AC-004">TypeScript type check passes</criterion>
+    <criterion id="AC-005">ESLint passes with no errors</criterion>
+    <criterion id="AC-006">All tests pass</criterion>
+    <criterion id="AC-007">npm pack verification confirms dist/ files included</criterion>
+    <criterion id="AC-008">Changesets trigger version PR creation</criterion>
+    <criterion id="AC-009">Merging version PR publishes packages to NPM</criterion>
+    <criterion id="AC-010">NPM packages are publicly accessible</criterion>
+    <criterion id="AC-011">GitHub release created with changelog</criterion>
+  </acceptance_criteria>
+
+  <implementation_guide>
+    <step number="1">
+      <title>Create Workflow Directory</title>
+      <action>mkdir -p .github/workflows</action>
+    </step>
+    <step number="2">
+      <title>Create CI Workflow</title>
+      <action>Create .github/workflows/ci.yml with PR/push triggers, concurrency control, build/typecheck/lint/test steps, and npm pack verification</action>
+      <reference>/Users/oleksii/Projects/Node/CallAiris/Event-Forge/.github/workflows/ci.yml</reference>
+    </step>
+    <step number="3">
+      <title>Create Release Workflow</title>
+      <action>Create .github/workflows/release.yml with main branch trigger, Changesets action, and NPM publishing</action>
+      <reference>/Users/oleksii/Projects/Node/CallAiris/Event-Forge/.github/workflows/release.yml</reference>
+    </step>
+    <step number="4">
+      <title>Configure Changesets</title>
+      <action>Create .changeset/config.json with linked packages ["@unipile/*"], public access, main as base branch</action>
+      <reference>/Users/oleksii/Projects/Node/CallAiris/Event-Forge/.changeset/config.json</reference>
+    </step>
+    <step number="5">
+      <title>Add CI Scripts to package.json</title>
+      <action>Add build, lint, test, typecheck, changeset, version-packages, and ci:publish scripts</action>
+      <scripts>
+        <script name="build">turbo run build</script>
+        <script name="lint">turbo run lint</script>
+        <script name="test">turbo run test</script>
+        <script name="typecheck">turbo run typecheck</script>
+        <script name="changeset">changeset</script>
+        <script name="version-packages">changeset version</script>
+        <script name="ci:publish">pnpm publish -r --access public --no-git-checks</script>
+      </scripts>
+    </step>
+    <step number="6">
+      <title>Configure GitHub Secrets</title>
+      <action>Document NPM_TOKEN setup process for repository secrets</action>
+    </step>
+  </implementation_guide>
+
+  <file_structure>
+    <file path=".github/workflows/ci.yml" type="create">Continuous Integration workflow</file>
+    <file path=".github/workflows/release.yml" type="create">Release Management workflow</file>
+    <file path=".changeset/config.json" type="create">Changesets configuration</file>
+    <file path=".changeset/README.md" type="create">Changesets documentation</file>
+    <file path="package.json" type="modify">Add CI scripts</file>
+  </file_structure>
+
+  <risks>
+    <risk id="RISK-001" likelihood="medium" impact="high">
+      <description>NPM_TOKEN secret not configured</description>
+      <mitigation>Document setup process, verify before first release</mitigation>
+    </risk>
+    <risk id="RISK-002" likelihood="low" impact="high">
+      <description>Package name conflicts on NPM</description>
+      <mitigation>Verify @unipile/* availability before publishing</mitigation>
+    </risk>
+    <risk id="RISK-003" likelihood="medium" impact="medium">
+      <description>Build failures on first release</description>
+      <mitigation>Test locally with pnpm run ci:publish --dry-run</mitigation>
+    </risk>
+    <risk id="RISK-004" likelihood="low" impact="medium">
+      <description>Changesets misconfiguration</description>
+      <mitigation>Test with empty changeset, verify linked config</mitigation>
+    </risk>
+  </risks>
+
+  <dependencies>
+    <package name="@changesets/cli" version="^2.27.0">Version management</package>
+    <package name="turbo" version="^2.0.0">Build orchestration</package>
+    <package name="typescript" version="^5.3.0">Type checking</package>
+    <package name="eslint" version="^8.56.0">Code linting</package>
+    <package name="jest" version="^29.7.0">Testing</package>
+  </dependencies>
+
+  <environment_variables>
+    <variable name="GITHUB_TOKEN" source="automatic">GitHub API access</variable>
+    <variable name="NPM_TOKEN" source="secret">NPM registry authentication</variable>
+    <variable name="NODE_AUTH_TOKEN" source="NPM_TOKEN">Node auth for npm publish</variable>
+  </environment_variables>
+
+  <metadata>
+    <knowledge_base_path>/Users/oleksii/Projects/Node/CallAiris/Unipile-Connector/.claude/knowledge-base/cicd-pipeline-implementation-kb.md</knowledge_base_path>
+    <reference_project>Event-Forge</reference_project>
+    <reference_files>
+      <file>/Users/oleksii/Projects/Node/CallAiris/Event-Forge/.github/workflows/ci.yml</file>
+      <file>/Users/oleksii/Projects/Node/CallAiris/Event-Forge/.github/workflows/release.yml</file>
+      <file>/Users/oleksii/Projects/Node/CallAiris/Event-Forge/.changeset/config.json</file>
+      <file>/Users/oleksii/Projects/Node/CallAiris/Event-Forge/turbo.json</file>
+    </reference_files>
+  </metadata>
+</task_assignment>

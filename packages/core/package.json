@@ -1,5 +1,5 @@
 {
-  "name": "@unipile/core",
+  "name": "@prodforcode/unipile-core",
   "version": "0.2.0",
   "description": "Framework-agnostic Unipile API client for email, messaging, and LinkedIn Sales Navigator",
   "license": "MIT",

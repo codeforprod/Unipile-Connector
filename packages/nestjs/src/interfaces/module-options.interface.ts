@@ -1,5 +1,5 @@
 import type { ModuleMetadata, Type } from '@nestjs/common';
-import type { UnipileConfig } from '@unipile/core';
+import type { UnipileConfig } from '@prodforcode/unipile-core';
 
 /**
  * Configuration options for the Unipile module.

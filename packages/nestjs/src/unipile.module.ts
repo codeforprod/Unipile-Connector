@@ -6,7 +6,7 @@ import {
   MessagingService,
   LinkedInService,
   WebhookService,
-} from '@unipile/core';
+} from '@prodforcode/unipile-core';
 import type {
   UnipileModuleOptions,
   UnipileModuleAsyncOptions,

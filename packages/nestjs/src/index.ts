@@ -57,7 +57,7 @@ export {
   NotFoundError,
   // Config
   DEFAULT_CONFIG,
-} from '@unipile/core';
+} from '@prodforcode/unipile-core';
 
 // Re-export types from core
 export type {
@@ -127,4 +127,4 @@ export type {
   ValidationErrorDetail,
   RequestOptions,
   HttpResponse,
-} from '@unipile/core';
+} from '@prodforcode/unipile-core';

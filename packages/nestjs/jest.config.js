@@ -6,7 +6,7 @@ export default {
   testMatch: ['**/*.spec.ts', '**/*.test.ts'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
-    '^@unipile/core$': '<rootDir>/../core/src/index.ts',
+    '^@prodforcode/unipile-core$': '<rootDir>/../core/src/index.ts',
   },
   transform: {
     '^.+\\.tsx?$': [
@@ -18,7 +18,7 @@ export default {
     ],
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(@nestjs|@unipile)/)',
+    'node_modules/(?!(@nestjs|@prodforcode)/)',
   ],
   extensionsToTreatAsEsm: ['.ts'],
   collectCoverageFrom: [

@@ -17,7 +17,7 @@ import type {
   MessagingService,
   LinkedInService,
   WebhookService,
-} from '@unipile/core';
+} from '@prodforcode/unipile-core';
 
 // Test service that uses all decorators
 @Injectable()

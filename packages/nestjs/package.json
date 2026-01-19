@@ -1,5 +1,5 @@
 {
-  "name": "@unipile/nestjs",
+  "name": "@prodforcode/unipile-nestjs",
   "version": "0.2.0",
   "description": "NestJS integration module for Unipile API client",
   "license": "MIT",
@@ -34,7 +34,7 @@
     "clean": "rm -rf dist coverage"
   },
   "dependencies": {
-    "@unipile/core": "workspace:*"
+    "@prodforcode/unipile-core": "workspace:*"
   },
   "peerDependencies": {
     "@nestjs/common": "^10.0.0 || ^11.0.0",

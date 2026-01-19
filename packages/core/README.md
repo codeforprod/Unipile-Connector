@@ -1,21 +1,21 @@
-# @unipile/core
+# @prodforcode/unipile-core
 
 Framework-agnostic Unipile API client for email, messaging, and LinkedIn Sales Navigator operations.
 
 ## Installation
 
 ```bash
-npm install @unipile/core
+npm install @prodforcode/unipile-core
 # or
-pnpm add @unipile/core
+pnpm add @prodforcode/unipile-core
 # or
-yarn add @unipile/core
+yarn add @prodforcode/unipile-core
 ```
 
 ## Quick Start
 
 ```typescript
-import { UnipileClient } from '@unipile/core';
+import { UnipileClient } from '@prodforcode/unipile-core';
 
 // Create client
 const client = new UnipileClient({
@@ -253,7 +253,7 @@ import {
   ValidationError,
   NotFoundError,
   ErrorCategory,
-} from '@unipile/core';
+} from '@prodforcode/unipile-core';
 
 try {
   await client.email.send(request);
@@ -320,7 +320,7 @@ import type {
   LinkedInPerson,
   Webhook,
   // ... and more
-} from '@unipile/core';
+} from '@prodforcode/unipile-core';
 ```
 
 ## License

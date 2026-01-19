@@ -38,7 +38,7 @@ pnpm release
 ## Linked packages
 
 The following packages are linked (versioned together):
-- `@unipile/*` - All packages in the @unipile scope
+- `@prodforcode/unipile-*` - All Unipile Connector packages
 
 This means when one linked package has a major/minor/patch bump, all linked packages get the same bump.
 

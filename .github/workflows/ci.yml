@@ -83,8 +83,8 @@ jobs:
 
           # Verify all packages
           cd packages
-          verify_package "core" "@unipile/core"
-          verify_package "nestjs" "@unipile/nestjs"
+          verify_package "core" "@prodforcode/unipile-core"
+          verify_package "nestjs" "@prodforcode/unipile-nestjs"
 
           echo ""
           echo "✅ All packages include dist/ files correctly"

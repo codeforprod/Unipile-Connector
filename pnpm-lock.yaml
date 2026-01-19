@@ -53,7 +53,7 @@ importers:
 
   packages/nestjs:
     dependencies:
-      '@unipile/core':
+      '@prodforcode/unipile-core':
         specifier: workspace:*
         version: link:../core
     devDependencies:

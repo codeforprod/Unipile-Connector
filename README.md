@@ -6,8 +6,8 @@ A universal NPM package for Unipile integration providing email operations, soci
 
 | Package | Description | NPM |
 |---------|-------------|-----|
-| [@unipile/core](./packages/core) | Framework-agnostic Unipile API client | [![npm](https://img.shields.io/npm/v/@unipile/core)](https://www.npmjs.com/package/@unipile/core) |
-| [@unipile/nestjs](./packages/nestjs) | NestJS dynamic module integration | [![npm](https://img.shields.io/npm/v/@unipile/nestjs)](https://www.npmjs.com/package/@unipile/nestjs) |
+| [@prodforcode/unipile-core](./packages/core) | Framework-agnostic Unipile API client | [![npm](https://img.shields.io/npm/v/@prodforcode/unipile-core)](https://www.npmjs.com/package/@prodforcode/unipile-core) |
+| [@prodforcode/unipile-nestjs](./packages/nestjs) | NestJS dynamic module integration | [![npm](https://img.shields.io/npm/v/@prodforcode/unipile-nestjs)](https://www.npmjs.com/package/@prodforcode/unipile-nestjs) |
 
 ## Features
 
@@ -50,16 +50,16 @@ A universal NPM package for Unipile integration providing email operations, soci
 
 ```bash
 # Core package (framework-agnostic)
-pnpm add @unipile/core
+pnpm add @prodforcode/unipile-core
 
 # NestJS integration
-pnpm add @unipile/nestjs
+pnpm add @prodforcode/unipile-nestjs
 ```
 
 ### Basic Usage
 
 ```typescript
-import { UnipileClient } from '@unipile/core';
+import { UnipileClient } from '@prodforcode/unipile-core';
 
 const client = new UnipileClient({
   dsn: 'api6.unipile.com:13624',
@@ -100,7 +100,7 @@ const companies = await client.linkedin.searchCompanies({
 
 ```typescript
 import { Module } from '@nestjs/common';
-import { UnipileModule } from '@unipile/nestjs';
+import { UnipileModule } from '@prodforcode/unipile-nestjs';
 
 @Module({
   imports: [
@@ -119,7 +119,7 @@ Or with async configuration:
 ```typescript
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { UnipileModule } from '@unipile/nestjs';
+import { UnipileModule } from '@prodforcode/unipile-nestjs';
 
 @Module({
   imports: [
@@ -142,7 +142,7 @@ Inject services in your code:
 
 ```typescript
 import { Injectable } from '@nestjs/common';
-import { InjectEmailService, InjectLinkedInService, EmailService, LinkedInService } from '@unipile/nestjs';
+import { InjectEmailService, InjectLinkedInService, EmailService, LinkedInService } from '@prodforcode/unipile-nestjs';
 
 @Injectable()
 export class MyService {
@@ -183,7 +183,7 @@ import {
   AuthError,
   ValidationError,
   NotFoundError,
-} from '@unipile/core';
+} from '@prodforcode/unipile-core';
 
 try {
   await client.email.send(request);
