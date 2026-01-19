@@ -1,6 +1,6 @@
 {
   "name": "@unipile/nestjs",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "NestJS integration module for Unipile API client",
   "license": "MIT",
   "author": "AIRIS Team",
