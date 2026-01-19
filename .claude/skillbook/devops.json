@@ -1,0 +1,155 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "service": "devops",
+    "last_updated": "2026-01-19T23:30:00Z",
+    "total_skills": 5,
+    "source_task": "AIRIS-84: Implement CI/CD Pipeline for Unipile-Connector"
+  },
+  "categories": {
+    "ci-cd": [
+      {
+        "id": "ci-workflow-smart-concurrency",
+        "name": "Smart concurrency management for CI pipelines",
+        "problem": "Concurrent PR builds waste resources, but main branch builds must never be cancelled",
+        "symptoms": [
+          "Multiple identical CI builds running for same PR",
+          "Main branch builds interrupted mid-deployment",
+          "Resource contention in CI/CD system"
+        ],
+        "solution": "Use dynamic concurrency based on event type: cancel-in-progress for PRs, never cancel for main branch",
+        "prevention": [
+          "Set concurrency group based on workflow and ref",
+          "Use conditional cancel-in-progress based on github.event_name"
+        ],
+        "examples": [
+          {
+            "context": "GitHub Actions CI workflow",
+            "code": "concurrency:\n  group: ${{ github.workflow }}-${{ github.ref }}\n  cancel-in-progress: ${{ github.event_name == 'pull_request' }}",
+            "explanation": "PRs get canceled when new commits pushed, main branch builds always complete"
+          }
+        ],
+        "tags": ["github-actions", "ci", "concurrency", "performance"],
+        "priority": "high"
+      },
+      {
+        "id": "release-workflow-never-cancel",
+        "name": "Never cancel in-progress release workflows",
+        "problem": "Canceling a release mid-execution can leave packages in inconsistent state (some published, some not)",
+        "symptoms": [
+          "Partial releases with mismatched versions",
+          "npm packages with missing dependencies",
+          "GitHub releases without corresponding npm packages"
+        ],
+        "solution": "Set cancel-in-progress: false for release workflows",
+        "prevention": [
+          "Always use dedicated concurrency group for release",
+          "Never trigger release manually during automated release"
+        ],
+        "examples": [
+          {
+            "context": "GitHub Actions release workflow",
+            "code": "concurrency:\n  group: release-${{ github.ref }}\n  cancel-in-progress: false",
+            "explanation": "Release workflow will always complete before new one starts"
+          }
+        ],
+        "tags": ["github-actions", "release", "npm-publish", "safety"],
+        "priority": "critical"
+      },
+      {
+        "id": "npm-pack-verification",
+        "name": "Verify npm pack includes compiled files before publishing",
+        "problem": "Publishing npm packages without compiled dist/ files results in broken packages",
+        "symptoms": [
+          "npm install succeeds but imports fail",
+          "Package missing main entry point",
+          "TypeScript types not included"
+        ],
+        "solution": "Add CI step that runs npm pack and verifies tarball contains expected files",
+        "prevention": [
+          "Add verification step before publish",
+          "Check for dist/*.js files in tarball",
+          "Fail CI if expected files missing"
+        ],
+        "examples": [
+          {
+            "context": "GitHub Actions CI workflow",
+            "code": "- name: Verify npm pack includes dist/\n  run: |\n    pnpm pack\n    tar -tzf *.tgz | grep -q 'dist/.*\\.js'",
+            "explanation": "Packs package and verifies dist JS files are included"
+          }
+        ],
+        "tags": ["npm", "publishing", "verification", "ci"],
+        "priority": "high"
+      },
+      {
+        "id": "changesets-linked-packages-monorepo",
+        "name": "Use Changesets linked packages for monorepo version sync",
+        "problem": "Related packages in monorepo can have mismatched versions, causing compatibility issues",
+        "symptoms": [
+          "Core package at v1.2.0 but wrapper at v1.1.0",
+          "Version mismatch errors at runtime",
+          "Confusion about which versions are compatible"
+        ],
+        "solution": "Configure Changesets with linked packages to version them together",
+        "prevention": [
+          "Set linked array in .changeset/config.json",
+          "Use glob pattern for scoped packages"
+        ],
+        "examples": [
+          {
+            "context": "Monorepo with @scope/core and @scope/nestjs",
+            "config": "{\n  \"linked\": [[\"@unipile/*\"]]\n}",
+            "explanation": "All @unipile/* packages version together - major bump in one means major bump in all"
+          }
+        ],
+        "tags": ["changesets", "monorepo", "versioning", "npm"],
+        "priority": "high"
+      },
+      {
+        "id": "pnpm-frozen-lockfile-ci",
+        "name": "Use pnpm frozen lockfile for deterministic CI builds",
+        "problem": "CI builds can get different dependencies than local development, causing unexpected failures",
+        "symptoms": [
+          "Tests pass locally but fail in CI",
+          "Different behavior between CI and production",
+          "Security vulnerabilities from auto-updated deps"
+        ],
+        "solution": "Use --frozen-lockfile flag in CI to ensure exact lockfile versions",
+        "prevention": [
+          "Always use --frozen-lockfile in CI",
+          "Fail fast if lockfile out of sync"
+        ],
+        "examples": [
+          {
+            "context": "GitHub Actions with pnpm",
+            "code": "pnpm install --frozen-lockfile",
+            "explanation": "Fails if lockfile doesn't match package.json - forces developer to commit lockfile updates"
+          }
+        ],
+        "tags": ["pnpm", "ci", "determinism", "security"],
+        "priority": "high"
+      }
+    ],
+    "github-actions": [
+      {
+        "id": "github-actions-version-pinning",
+        "name": "Pin GitHub Actions to major versions",
+        "problem": "Using latest or minor versions can break CI unexpectedly",
+        "solution": "Pin to major version (e.g., @v4) to get security updates while maintaining stability",
+        "examples": [
+          {
+            "actions": [
+              "actions/checkout@v4",
+              "actions/setup-node@v4",
+              "pnpm/action-setup@v4",
+              "changesets/action@v1"
+            ],
+            "explanation": "Major version pins get patch updates but not breaking changes"
+          }
+        ],
+        "tags": ["github-actions", "versioning", "stability"],
+        "priority": "medium"
+      }
+    ]
+  }
+}

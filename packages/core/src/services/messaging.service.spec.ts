@@ -128,6 +128,7 @@ describe('MessagingService', () => {
 
       const result = await messagingService.listMessages({
         chatId: 'chat-1',
+        accountId: 'acc-1',
         limit: 50,
       });
 
@@ -139,6 +140,7 @@ describe('MessagingService', () => {
           limit: 50,
           cursor: undefined,
         },
+        'acc-1',
       );
       expect(result.items).toHaveLength(2);
     });
@@ -155,6 +157,7 @@ describe('MessagingService', () => {
 
       const result = await messagingService.sendMessage({
         chatId: 'chat-1',
+        accountId: 'acc-1',
         text: 'Hello!',
       });
 
@@ -165,6 +168,7 @@ describe('MessagingService', () => {
           attachments: undefined,
           reply_to: undefined,
         },
+        'acc-1',
       );
       expect(result.text).toBe('Hello!');
     });
@@ -178,9 +182,13 @@ describe('MessagingService', () => {
       ];
       mockHttpClient.get.mockResolvedValue({ data: { items: mockAttendees } });
 
-      const result = await messagingService.listAttendees('chat-1');
+      const result = await messagingService.listAttendees('chat-1', 'acc-1');
 
-      expect(mockHttpClient.get).toHaveBeenCalledWith('/api/v1/chats/chat-1/attendees');
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
+        '/api/v1/chats/chat-1/attendees',
+        {},
+        'acc-1',
+      );
       expect(result).toHaveLength(2);
     });
   });
@@ -377,7 +385,7 @@ describe('MessagingService', () => {
         data: { messages: mockMessages, next_cursor: 'cursor-456' },
       });
 
-      const result = await messagingService.listMessages({ chatId: 'chat-1' });
+      const result = await messagingService.listMessages({ chatId: 'chat-1', accountId: 'acc-1' });
 
       expect(result.items).toEqual(mockMessages);
       expect(result.cursor).toBe('cursor-456');
@@ -386,7 +394,7 @@ describe('MessagingService', () => {
     it('should return empty array when no items or messages field', async () => {
       mockHttpClient.get.mockResolvedValue({ data: {} });
 
-      const result = await messagingService.listMessages({ chatId: 'chat-1' });
+      const result = await messagingService.listMessages({ chatId: 'chat-1', accountId: 'acc-1' });
 
       expect(result.items).toEqual([]);
       expect(result.cursor).toBeNull();
@@ -401,6 +409,7 @@ describe('MessagingService', () => {
 
       await messagingService.listMessages({
         chatId: 'chat-1',
+        accountId: 'acc-1',
         before: '2024-01-15T00:00:00Z',
         after: '2024-01-01T00:00:00Z',
         limit: 100,
@@ -415,6 +424,7 @@ describe('MessagingService', () => {
           limit: 100,
           cursor: 'cursor-xyz',
         },
+        'acc-1',
       );
     });
   });
@@ -427,7 +437,7 @@ describe('MessagingService', () => {
       ];
       mockHttpClient.get.mockResolvedValue({ data: { attendees: mockAttendees } });
 
-      const result = await messagingService.listAttendees('chat-1');
+      const result = await messagingService.listAttendees('chat-1', 'acc-1');
 
       expect(result).toEqual(mockAttendees);
     });
@@ -435,7 +445,7 @@ describe('MessagingService', () => {
     it('should return empty array when no items or attendees field', async () => {
       mockHttpClient.get.mockResolvedValue({ data: {} });
 
-      const result = await messagingService.listAttendees('chat-1');
+      const result = await messagingService.listAttendees('chat-1', 'acc-1');
 
       expect(result).toEqual([]);
     });
@@ -487,6 +497,7 @@ describe('MessagingService', () => {
 
       await messagingService.sendMessage({
         chatId: 'chat-1',
+        accountId: 'acc-1',
         text: 'See attached',
         attachments: [
           {
@@ -510,6 +521,7 @@ describe('MessagingService', () => {
           ],
           reply_to: undefined,
         },
+        'acc-1',
       );
     });
 
@@ -520,6 +532,7 @@ describe('MessagingService', () => {
 
       await messagingService.sendMessage({
         chatId: 'chat-1',
+        accountId: 'acc-1',
         text: 'Reply text',
         replyTo: 'msg-1',
       });
@@ -531,6 +544,7 @@ describe('MessagingService', () => {
           attachments: undefined,
           reply_to: 'msg-1',
         },
+        'acc-1',
       );
     });
   });
@@ -540,10 +554,12 @@ describe('MessagingService', () => {
       const mockMessage = { id: 'msg-1', text: 'Hello', chatId: 'chat-1' };
       mockHttpClient.get.mockResolvedValue({ data: mockMessage });
 
-      const result = await messagingService.getMessage('chat-1', 'msg-1');
+      const result = await messagingService.getMessage('chat-1', 'msg-1', 'acc-1');
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(
         '/api/v1/chats/chat-1/messages/msg-1',
+        {},
+        'acc-1',
       );
       expect(result).toEqual(mockMessage);
     });
@@ -555,10 +571,12 @@ describe('MessagingService', () => {
         data: { url: 'https://example.com/picture.jpg' },
       });
 
-      const result = await messagingService.getAttendeePicture('chat-1', 'user-1');
+      const result = await messagingService.getAttendeePicture('chat-1', 'user-1', 'acc-1');
 
       expect(mockHttpClient.get).toHaveBeenCalledWith(
         '/api/v1/chats/chat-1/attendees/user-1/picture',
+        {},
+        'acc-1',
       );
       expect(result).toBe('https://example.com/picture.jpg');
     });
