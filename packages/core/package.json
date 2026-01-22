@@ -1,6 +1,6 @@
 {
   "name": "@prodforcode/unipile-core",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Framework-agnostic Unipile API client for email, messaging, and LinkedIn Sales Navigator",
   "license": "MIT",
   "author": "AIRIS Team",
@@ -10,25 +10,79 @@
     "directory": "packages/core"
   },
   "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/cjs/index.cjs",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/cjs/index.cjs"
+      }
     },
     "./interfaces": {
-      "types": "./dist/interfaces/index.d.ts",
-      "import": "./dist/interfaces/index.js"
+      "import": {
+        "types": "./dist/types/interfaces/index.d.ts",
+        "default": "./dist/esm/interfaces/index.js"
+      },
+      "require": {
+        "types": "./dist/types/interfaces/index.d.ts",
+        "default": "./dist/cjs/interfaces/index.cjs"
+      }
     },
     "./enums": {
-      "types": "./dist/enums/index.d.ts",
-      "import": "./dist/enums/index.js"
+      "import": {
+        "types": "./dist/types/enums/index.d.ts",
+        "default": "./dist/esm/enums/index.js"
+      },
+      "require": {
+        "types": "./dist/types/enums/index.d.ts",
+        "default": "./dist/cjs/enums/index.cjs"
+      }
     },
     "./services": {
-      "types": "./dist/services/index.d.ts",
-      "import": "./dist/services/index.js"
+      "import": {
+        "types": "./dist/types/services/index.d.ts",
+        "default": "./dist/esm/services/index.js"
+      },
+      "require": {
+        "types": "./dist/types/services/index.d.ts",
+        "default": "./dist/cjs/services/index.cjs"
+      }
+    },
+    "./errors": {
+      "import": {
+        "types": "./dist/types/errors/index.d.ts",
+        "default": "./dist/esm/errors/index.js"
+      },
+      "require": {
+        "types": "./dist/types/errors/index.d.ts",
+        "default": "./dist/cjs/errors/index.cjs"
+      }
+    },
+    "./http": {
+      "import": {
+        "types": "./dist/types/http/index.d.ts",
+        "default": "./dist/esm/http/index.js"
+      },
+      "require": {
+        "types": "./dist/types/http/index.d.ts",
+        "default": "./dist/cjs/http/index.cjs"
+      }
+    },
+    "./client": {
+      "import": {
+        "types": "./dist/types/client/index.d.ts",
+        "default": "./dist/esm/client/index.js"
+      },
+      "require": {
+        "types": "./dist/types/client/index.d.ts",
+        "default": "./dist/cjs/client/index.cjs"
+      }
     }
   },
   "files": [
@@ -36,14 +90,18 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "dev": "tsc -p tsconfig.build.json --watch",
+    "clean": "rm -rf dist coverage",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json && node scripts/rename-cjs.js",
+    "build:markers": "echo '{\"type\":\"module\"}' > dist/esm/package.json && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+    "build": "npm run clean && npm run build:esm && npm run build:cjs && npm run build:markers",
+    "dev": "tsc -p tsconfig.esm.json --watch",
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
     "test:cov": "NODE_OPTIONS='--experimental-vm-modules' jest --coverage",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist coverage"
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@types/jest": "^29.5.14",
@@ -65,7 +123,10 @@
     "instagram",
     "telegram",
     "slack",
-    "api-client"
+    "api-client",
+    "esm",
+    "commonjs",
+    "dual-package"
   ],
   "engines": {
     "node": ">=18.0.0"
