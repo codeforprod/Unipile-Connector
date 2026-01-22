@@ -2,6 +2,8 @@
 
 Framework-agnostic Unipile API client for email, messaging, and LinkedIn Sales Navigator operations.
 
+**Supports both ESM and CommonJS** - works with modern ESM projects and legacy CommonJS environments like NestJS.
+
 ## Installation
 
 ```bash
@@ -14,10 +16,11 @@ yarn add @prodforcode/unipile-core
 
 ## Quick Start
 
+### ESM (Modern JavaScript/TypeScript)
+
 ```typescript
 import { UnipileClient } from '@prodforcode/unipile-core';
 
-// Create client
 const client = new UnipileClient({
   dsn: 'api6.unipile.com:13624',
   apiKey: 'your-api-key',
@@ -25,6 +28,35 @@ const client = new UnipileClient({
 
 // Or create from environment variables
 const client = UnipileClient.fromEnv();
+```
+
+### CommonJS (NestJS, Legacy Node.js)
+
+```javascript
+const { UnipileClient } = require('@prodforcode/unipile-core');
+
+const client = new UnipileClient({
+  dsn: 'api6.unipile.com:13624',
+  apiKey: 'your-api-key',
+});
+```
+
+## Subpath Exports
+
+All subpaths support both ESM and CommonJS:
+
+```typescript
+// ESM
+import { UnipileConfig } from '@prodforcode/unipile-core/interfaces';
+import { AccountStatus } from '@prodforcode/unipile-core/enums';
+import { AccountService } from '@prodforcode/unipile-core/services';
+import { UnipileError } from '@prodforcode/unipile-core/errors';
+
+// CommonJS
+const { UnipileConfig } = require('@prodforcode/unipile-core/interfaces');
+const { AccountStatus } = require('@prodforcode/unipile-core/enums');
+const { AccountService } = require('@prodforcode/unipile-core/services');
+const { UnipileError } = require('@prodforcode/unipile-core/errors');
 ```
 
 ## Services
@@ -322,6 +354,17 @@ import type {
   // ... and more
 } from '@prodforcode/unipile-core';
 ```
+
+## Module System Compatibility
+
+This package uses the [Dual Package Pattern](https://nodejs.org/api/packages.html#dual-commonjses-module-packages) to support both ESM and CommonJS:
+
+| Environment | Module System | Import Style |
+|-------------|--------------|--------------|
+| Modern Node.js (ESM) | ESM | `import { ... } from '@prodforcode/unipile-core'` |
+| NestJS | CommonJS | `import { ... } from '@prodforcode/unipile-core'` (transpiled to require) |
+| Legacy Node.js | CommonJS | `const { ... } = require('@prodforcode/unipile-core')` |
+| TypeScript | Both | Full type definitions available |
 
 ## License
 
