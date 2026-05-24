@@ -95,7 +95,9 @@ export class UnipileClient {
    * Creates a new Unipile client from environment variables.
    *
    * Uses the following environment variables:
-   * - UNIPILE_DSN: API domain:port
+   * - UNIPILE_DSN: API domain:port for v1 mode
+   * - UNIPILE_API_BASE_URL: Explicit API base URL for v2 mode
+   * - UNIPILE_API_VERSION: API version (v1 or v2)
    * - UNIPILE_API_KEY: API access token
    * - UNIPILE_USE_HTTP: Use HTTP instead of HTTPS (optional)
    *
@@ -104,10 +106,22 @@ export class UnipileClient {
    */
   static fromEnv(): UnipileClient {
     const dsn = process.env['UNIPILE_DSN'];
+    const apiBaseUrl = process.env['UNIPILE_API_BASE_URL'];
+    const apiVersion = process.env['UNIPILE_API_VERSION'];
     const apiKey = process.env['UNIPILE_API_KEY'];
     const useHttp = process.env['UNIPILE_USE_HTTP'] === 'true';
 
-    if (dsn === undefined || dsn === '') {
+    if (apiVersion !== undefined && apiVersion !== 'v1' && apiVersion !== 'v2') {
+      throw new Error('UNIPILE_API_VERSION must be "v1" or "v2"');
+    }
+
+    const resolvedApiVersion =
+      apiVersion ?? (apiBaseUrl !== undefined && apiBaseUrl !== '' ? 'v2' : undefined);
+
+    if (
+      (resolvedApiVersion === undefined || resolvedApiVersion === 'v1') &&
+      (dsn === undefined || dsn === '')
+    ) {
       throw new Error('UNIPILE_DSN environment variable is required');
     }
 
@@ -117,6 +131,8 @@ export class UnipileClient {
 
     return new UnipileClient({
       dsn,
+      apiBaseUrl,
+      apiVersion: resolvedApiVersion,
       apiKey,
       useHttp,
     });

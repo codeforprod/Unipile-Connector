@@ -57,6 +57,7 @@ export {
   NotFoundError,
   // Config
   DEFAULT_CONFIG,
+  DEFAULT_V2_API_BASE_URL,
 } from '@prodforcode/unipile-core';
 
 // Re-export types from core
@@ -127,4 +128,26 @@ export type {
   ValidationErrorDetail,
   RequestOptions,
   HttpResponse,
+  UnipileApiVersion,
+  AuthIntentType,
+  CreateAuthIntentRequest,
+  AuthIntent,
+  CreateAuthLinkRequest,
+  AuthLink,
+  ResolveAuthCheckpointRequest,
+  EmailCompatibilityBoundary,
+  JsonAttachment,
+  UpdateChatRequest,
+  DownloadAttachmentRequest,
+  LinkedInRouteGroup,
+  RawLinkedInRequest,
+  GetLinkedInSearchParametersV2Request,
+  LinkedInSearchV2Request,
+  ListPostsRequest,
+  ReactToPostRequest,
+  CreatePostCommentRequest,
+  SendInvitationRequest,
+  WebhookEndpoint,
+  CreateWebhookEndpointRequest,
+  WebhookEventType,
 } from '@prodforcode/unipile-core';

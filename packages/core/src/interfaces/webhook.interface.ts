@@ -229,3 +229,57 @@ export interface WebhookDelivery {
   /** Error message if failed */
   error?: string;
 }
+
+/**
+ * v2 webhook endpoint representation.
+ */
+export interface WebhookEndpoint {
+  /** Unique endpoint identifier */
+  id: string;
+
+  /** Target URL */
+  url: string;
+
+  /** Subscribed v2 event types */
+  events?: string[];
+
+  /** Whether endpoint is active */
+  isActive?: boolean;
+
+  /** Creation timestamp */
+  createdAt?: string;
+
+  /** Raw v2 response fields preserved for forward compatibility */
+  raw?: Record<string, unknown>;
+}
+
+/**
+ * v2 webhook endpoint creation request.
+ */
+export interface CreateWebhookEndpointRequest {
+  /** Target URL */
+  url: string;
+
+  /** v2 event types to subscribe to */
+  events?: string[];
+
+  /** Optional endpoint secret */
+  secret?: string;
+
+  /** Optional custom headers */
+  headers?: Record<string, string>;
+}
+
+/**
+ * v2 webhook event type metadata.
+ */
+export interface WebhookEventType {
+  /** Event type identifier */
+  id: string;
+
+  /** Event display name */
+  name?: string;
+
+  /** Event description */
+  description?: string;
+}

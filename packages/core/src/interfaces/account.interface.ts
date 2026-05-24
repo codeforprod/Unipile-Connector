@@ -183,3 +183,129 @@ export interface ReconnectAccountRequest {
   /** Account ID to reconnect */
   accountId: string;
 }
+
+/**
+ * v2 auth intent type.
+ */
+export type AuthIntentType = 'create' | 'reconnect';
+
+/**
+ * v2 native authentication intent request.
+ */
+export interface CreateAuthIntentRequest {
+  /** Create a new account connection or reconnect an existing one. */
+  type?: AuthIntentType;
+
+  /** Account provider. */
+  provider?: AccountProvider | string;
+
+  /** Existing account ID for reconnect intents. */
+  accountId?: string;
+
+  /** Login username or email for credential-based flows. */
+  username?: string;
+
+  /** Account password for credential-based flows. */
+  password?: string;
+
+  /** Session cookies for cookie-based flows. */
+  cookies?: string;
+
+  /** OAuth authorization code. */
+  code?: string;
+
+  /** OAuth redirect URI. */
+  redirectUri?: string;
+
+  /** Additional provider-specific v2 auth intent fields. */
+  payload?: Record<string, unknown>;
+}
+
+/**
+ * v2 authentication intent response.
+ */
+export interface AuthIntent {
+  /** Intent identifier used for follow-up checkpoint calls. */
+  id: string;
+
+  /** Alternate intent identifier returned by some API shapes. */
+  intentId?: string;
+
+  /** Connected account ID when available. */
+  accountId?: string;
+
+  /** Intent status. */
+  status?: string;
+
+  /** Optional checkpoint details. */
+  checkpoint?: Checkpoint;
+
+  /** Raw v2 response fields preserved for forward compatibility. */
+  raw?: Record<string, unknown>;
+}
+
+/**
+ * v2 hosted authentication link request.
+ */
+export interface CreateAuthLinkRequest {
+  /** Create or reconnect flow. */
+  type: AuthIntentType;
+
+  /** Providers available in the hosted auth flow. */
+  providers: Array<AccountProvider | string> | '*';
+
+  /** Existing account ID for reconnect links. */
+  accountId?: string;
+
+  /** API URL shown to the hosted auth flow when required. */
+  apiUrl?: string;
+
+  /** Link expiration date/time in ISO 8601 format. */
+  expiresOn?: string;
+
+  /** Success redirect URL. */
+  successRedirectUrl?: string;
+
+  /** Failure redirect URL. */
+  failureRedirectUrl?: string;
+
+  /** Backend notification URL. */
+  notifyUrl?: string;
+
+  /** Caller-owned correlation value. */
+  name?: string;
+
+  /** Additional v2 hosted auth fields. */
+  payload?: Record<string, unknown>;
+}
+
+/**
+ * v2 hosted authentication link response.
+ */
+export interface AuthLink {
+  /** Generated hosted auth URL. */
+  url: string;
+
+  /** Raw object type when returned by Unipile. */
+  object?: string;
+
+  /** Raw v2 response fields preserved for forward compatibility. */
+  raw?: Record<string, unknown>;
+}
+
+/**
+ * v2 checkpoint resolution request.
+ */
+export interface ResolveAuthCheckpointRequest {
+  /** v2 auth intent identifier. */
+  intentId: string;
+
+  /** Verification code for OTP flows. */
+  code?: string;
+
+  /** CAPTCHA solution token. */
+  captchaSolution?: string;
+
+  /** Additional v2 checkpoint fields. */
+  payload?: Record<string, unknown>;
+}

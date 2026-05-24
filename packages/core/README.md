@@ -12,6 +12,9 @@ pnpm add @prodforcode/unipile-core
 yarn add @prodforcode/unipile-core
 ```
 
+The package ships dual ESM/CommonJS output. Use standard ESM imports or
+CommonJS `require('@prodforcode/unipile-core')` in NestJS/CommonJS services.
+
 ## Quick Start
 
 ```typescript
@@ -25,6 +28,24 @@ const client = new UnipileClient({
 
 // Or create from environment variables
 const client = UnipileClient.fromEnv();
+```
+
+### v2 Configuration
+
+```typescript
+const client = new UnipileClient({
+  apiVersion: 'v2',
+  apiKey: 'your-v2-api-key',
+  // apiBaseUrl defaults to https://api.unipile.com/v2
+});
+```
+
+In v2 mode account-scoped messaging and LinkedIn helper methods put the
+`accountId` in the route path. The email service intentionally remains a v1
+compatibility surface until Unipile v2 email routes are confirmed:
+
+```typescript
+const boundary = client.email.getCompatibilityBoundary();
 ```
 
 ## Services
@@ -65,6 +86,19 @@ if (client.accounts.isCheckpoint(credResult)) {
 const link = await client.accounts.createHostedAuthLink({
   provider: AccountProvider.GMAIL,
   callbackUrl: 'https://yourapp.com/auth/callback',
+});
+
+// v2 native auth intent and checkpoint
+const intent = await client.accounts.createAuthIntent({
+  type: 'create',
+  provider: AccountProvider.LINKEDIN,
+  username: 'user@example.com',
+  password: 'password',
+});
+
+await client.accounts.resolveAuthCheckpoint({
+  intentId: intent.id,
+  code: '123456',
 });
 ```
 
@@ -124,25 +158,38 @@ const chat = await client.messaging.startChat({
 
 // Send message
 const message = await client.messaging.sendMessage({
+  accountId: 'account-123',
   chatId: 'chat-123',
   text: 'Hello!',
 });
 
 // Send message with attachment
 await client.messaging.sendMessage({
+  accountId: 'account-123',
   chatId: 'chat-123',
   text: 'Check out this file',
-  attachments: [{
-    filename: 'document.pdf',
-    contentType: 'application/pdf',
-    content: 'base64-encoded-content',
-  }],
+  attachments: [
+    {
+      filename: 'document.pdf',
+      contentType: 'application/pdf',
+      content: 'base64-encoded-content',
+    },
+  ],
 });
 
 // List messages with pagination
 const messages = await client.messaging.listMessages({
+  accountId: 'account-123',
   chatId: 'chat-123',
   limit: 50,
+});
+
+// v2 attachment download
+const attachment = await client.messaging.downloadAttachment({
+  accountId: 'acc_123',
+  chatId: 'chat-123',
+  messageId: 'msg-123',
+  attachmentId: 'att-123',
 });
 
 // LinkedIn InMail
@@ -265,7 +312,7 @@ try {
     console.log('Authentication failed:', error.message);
   } else if (error instanceof ValidationError) {
     console.log('Validation errors:');
-    error.errors.forEach(e => console.log(`  ${e.field}: ${e.message}`));
+    error.errors.forEach((e) => console.log(`  ${e.field}: ${e.message}`));
   } else if (error instanceof NotFoundError) {
     console.log(`${error.resourceType} ${error.resourceId} not found`);
   } else if (error instanceof UnipileError) {
@@ -280,8 +327,14 @@ try {
 
 ```typescript
 interface UnipileConfig {
-  /** API domain:port (e.g., "api6.unipile.com:13624") */
-  dsn: string;
+  /** API domain:port for v1 mode (e.g., "api6.unipile.com:13624") */
+  dsn?: string;
+
+  /** Explicit API base URL; v2 defaults to https://api.unipile.com/v2 */
+  apiBaseUrl?: string;
+
+  /** API route family (default: "v1") */
+  apiVersion?: 'v1' | 'v2';
 
   /** API access token */
   apiKey: string;

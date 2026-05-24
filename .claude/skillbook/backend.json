@@ -2,8 +2,8 @@
   "metadata": {
     "version": "1.0",
     "service": "backend",
-    "last_updated": "2026-01-17T16:00:00Z",
-    "total_skills": 8,
+    "last_updated": "2026-05-24T22:50:00Z",
+    "total_skills": 9,
     "source_task": "AIRIS-82: Create Unipile Connector NPM Package"
   },
   "categories": {
@@ -171,6 +171,24 @@
         },
         "tags": ["monorepo", "performance", "build"],
         "priority": "medium"
+      },
+      {
+        "id": "dual-esm-cjs-package-exports",
+        "name": "Build shared packages with conditional ESM and CommonJS exports",
+        "pattern": "Emit ESM to dist/esm and CommonJS to dist/cjs, point package exports import/require conditions at each output, and add dist/cjs/package.json with type commonjs when the root package is type module",
+        "context": "Shared TypeScript packages consumed by both ESM tools and CommonJS NestJS services",
+        "benefits": [
+          "ESM consumers keep native import support",
+          "CommonJS services can require the same package version",
+          "TypeScript consumers resolve one declarations path",
+          "Local tarball smoke tests can prove package-name resolution before publishing"
+        ],
+        "example": {
+          "exports": "{ import: './dist/esm/index.js', require: './dist/cjs/index.js', types: './dist/esm/index.d.ts' }",
+          "verification": "Pack the package, install the tarball into a temporary project, then test both require('@scope/pkg') and import from '@scope/pkg'"
+        },
+        "tags": ["typescript", "npm-package", "esm", "commonjs", "release"],
+        "priority": "high"
       },
       {
         "id": "nestjs-dynamic-module-async",

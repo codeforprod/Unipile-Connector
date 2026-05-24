@@ -1,8 +1,6 @@
-export type {
-  UnipileConfig,
-} from './config.interface.js';
+export type { UnipileConfig, UnipileApiVersion } from './config.interface.js';
 
-export { DEFAULT_CONFIG } from './config.interface.js';
+export { DEFAULT_CONFIG, DEFAULT_V2_API_BASE_URL } from './config.interface.js';
 
 export type {
   PaginatedResponse,
@@ -24,6 +22,12 @@ export type {
   HostedAuthLink,
   CreateHostedAuthLinkRequest,
   ReconnectAccountRequest,
+  AuthIntentType,
+  CreateAuthIntentRequest,
+  AuthIntent,
+  CreateAuthLinkRequest,
+  AuthLink,
+  ResolveAuthCheckpointRequest,
 } from './account.interface.js';
 
 export type {
@@ -36,6 +40,7 @@ export type {
   EmailFolder,
   ListEmailsOptions,
   CreateDraftRequest,
+  EmailCompatibilityBoundary,
 } from './email.interface.js';
 
 export type {
@@ -50,6 +55,9 @@ export type {
   ListMessagesOptions,
   SendInMailRequest,
   InMailCreditBalance,
+  JsonAttachment,
+  UpdateChatRequest,
+  DownloadAttachmentRequest,
 } from './messaging.interface.js';
 
 export type {
@@ -66,9 +74,18 @@ export type {
   PeopleSearchResult,
   SearchParameterValue,
   SearchParameterType,
+  LinkedInSearchParameterV2Type,
   GetSearchParametersRequest,
   EnrichCompanyRequest,
   EnrichPersonRequest,
+  LinkedInRouteGroup,
+  RawLinkedInRequest,
+  GetLinkedInSearchParametersV2Request,
+  LinkedInSearchV2Request,
+  ListPostsRequest,
+  ReactToPostRequest,
+  CreatePostCommentRequest,
+  SendInvitationRequest,
 } from './linkedin.interface.js';
 
 export type {
@@ -81,4 +98,7 @@ export type {
   AccountStatusChangedPayload,
   WebhookPayload,
   WebhookDelivery,
+  WebhookEndpoint,
+  CreateWebhookEndpointRequest,
+  WebhookEventType,
 } from './webhook.interface.js';

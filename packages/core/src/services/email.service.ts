@@ -6,6 +6,7 @@ import type {
   EmailFolder,
   ListEmailsOptions,
   CreateDraftRequest,
+  EmailCompatibilityBoundary,
   PaginatedResponse,
 } from '../interfaces/index.js';
 
@@ -34,6 +35,17 @@ interface FolderListResponse {
  */
 export class EmailService {
   constructor(private readonly httpClient: HttpClient) {}
+
+  /**
+   * Returns the explicit package-level compatibility boundary for email.
+   */
+  getCompatibilityBoundary(): EmailCompatibilityBoundary {
+    return {
+      apiVersion: 'v1',
+      reason:
+        'Email methods remain on the v1 compatibility surface until Unipile v2 email routes are confirmed.',
+    };
+  }
 
   /**
    * Lists emails for an account with optional filtering.

@@ -9,6 +9,9 @@ import type {
   ListMessagesOptions,
   SendInMailRequest,
   InMailCreditBalance,
+  DownloadAttachmentRequest,
+  JsonAttachment,
+  UpdateChatRequest,
   PaginatedResponse,
 } from '../interfaces/index.js';
 
@@ -47,12 +50,48 @@ interface AttendeeListResponse {
 export class MessagingService {
   constructor(private readonly httpClient: HttpClient) {}
 
+  private isV2(): boolean {
+    return this.httpClient.getApiVersion?.() === 'v2';
+  }
+
+  private accountPath(accountId: string, path: string): string {
+    return `/${encodeURIComponent(accountId)}${path}`;
+  }
+
+  private toJsonAttachments(
+    attachments?: Array<{ filename: string; contentType: string; content?: string }>,
+  ): JsonAttachment[] | undefined {
+    return attachments?.map((attachment) => ({
+      filename: attachment.filename,
+      content_type: attachment.contentType,
+      data: attachment.content ?? '',
+    }));
+  }
+
   /**
    * Lists chats for an account with optional filtering.
    * @param options - List options including filters and pagination
    * @returns Paginated list of chats
    */
   async listChats(options: ListChatsOptions): Promise<PaginatedResponse<Chat>> {
+    if (this.isV2()) {
+      const response = await this.httpClient.get<ChatListResponse>(
+        this.accountPath(options.accountId, '/chats'),
+        {
+          has_unread: options.hasUnread,
+          include_archived: options.includeArchived,
+          limit: options.limit,
+          cursor: options.cursor,
+        },
+        options.accountId,
+      );
+
+      return {
+        items: response.data.items ?? response.data.chats ?? [],
+        cursor: response.data.cursor ?? response.data.next_cursor ?? null,
+      };
+    }
+
     const response = await this.httpClient.get<ChatListResponse>(
       '/api/v1/chats',
       {
@@ -78,6 +117,15 @@ export class MessagingService {
    * @returns Chat details
    */
   async getChat(chatId: string, accountId: string): Promise<Chat> {
+    if (this.isV2()) {
+      const response = await this.httpClient.get<Chat>(
+        this.accountPath(accountId, `/chats/${encodeURIComponent(chatId)}`),
+        {},
+        accountId,
+      );
+      return response.data;
+    }
+
     const response = await this.httpClient.get<Chat>(
       `/api/v1/chats/${chatId}`,
       { account_id: accountId },
@@ -92,6 +140,19 @@ export class MessagingService {
    * @returns Created chat
    */
   async startChat(request: StartChatRequest): Promise<Chat> {
+    if (this.isV2()) {
+      const response = await this.httpClient.post<Chat>(
+        this.accountPath(request.accountId, '/chats/send'),
+        {
+          users_ids: request.attendeeIds,
+          text: request.message,
+          attachments: this.toJsonAttachments(request.attachments),
+        },
+        request.accountId,
+      );
+      return response.data;
+    }
+
     const response = await this.httpClient.post<Chat>(
       '/api/v1/chats',
       {
@@ -115,6 +176,27 @@ export class MessagingService {
    * @returns Paginated list of messages
    */
   async listMessages(options: ListMessagesOptions): Promise<PaginatedResponse<Message>> {
+    if (this.isV2()) {
+      const response = await this.httpClient.get<MessageListResponse>(
+        this.accountPath(
+          options.accountId,
+          `/chats/${encodeURIComponent(options.chatId)}/messages`,
+        ),
+        {
+          before: options.before,
+          after: options.after,
+          limit: options.limit,
+          cursor: options.cursor,
+        },
+        options.accountId,
+      );
+
+      return {
+        items: response.data.items ?? response.data.messages ?? [],
+        cursor: response.data.cursor ?? response.data.next_cursor ?? null,
+      };
+    }
+
     const response = await this.httpClient.get<MessageListResponse>(
       `/api/v1/chats/${options.chatId}/messages`,
       {
@@ -140,6 +222,18 @@ export class MessagingService {
    * @returns Message details
    */
   async getMessage(chatId: string, messageId: string, accountId: string): Promise<Message> {
+    if (this.isV2()) {
+      const response = await this.httpClient.get<Message>(
+        this.accountPath(
+          accountId,
+          `/chats/${encodeURIComponent(chatId)}/messages/${encodeURIComponent(messageId)}`,
+        ),
+        {},
+        accountId,
+      );
+      return response.data;
+    }
+
     const response = await this.httpClient.get<Message>(
       `/api/v1/chats/${chatId}/messages/${messageId}`,
       {},
@@ -154,6 +248,22 @@ export class MessagingService {
    * @returns Sent message
    */
   async sendMessage(request: SendMessageRequest): Promise<Message> {
+    if (this.isV2()) {
+      const response = await this.httpClient.post<Message>(
+        this.accountPath(
+          request.accountId,
+          `/chats/${encodeURIComponent(request.chatId)}/messages/send`,
+        ),
+        {
+          text: request.text,
+          attachments: this.toJsonAttachments(request.attachments),
+          reply_to: request.replyTo,
+        },
+        request.accountId,
+      );
+      return response.data;
+    }
+
     const response = await this.httpClient.post<Message>(
       `/api/v1/chats/${request.chatId}/messages`,
       {
@@ -177,6 +287,15 @@ export class MessagingService {
    * @returns List of chat attendees
    */
   async listAttendees(chatId: string, accountId: string): Promise<ChatAttendee[]> {
+    if (this.isV2()) {
+      const response = await this.httpClient.get<AttendeeListResponse>(
+        this.accountPath(accountId, `/chats/${encodeURIComponent(chatId)}/participants`),
+        {},
+        accountId,
+      );
+      return response.data.items ?? response.data.attendees ?? [];
+    }
+
     const response = await this.httpClient.get<AttendeeListResponse>(
       `/api/v1/chats/${chatId}/attendees`,
       {},
@@ -193,6 +312,18 @@ export class MessagingService {
    * @returns Profile picture URL
    */
   async getAttendeePicture(chatId: string, attendeeId: string, accountId: string): Promise<string> {
+    if (this.isV2()) {
+      const response = await this.httpClient.get<{ url: string }>(
+        this.accountPath(
+          accountId,
+          `/chats/${encodeURIComponent(chatId)}/participants/${encodeURIComponent(attendeeId)}/picture`,
+        ),
+        {},
+        accountId,
+      );
+      return response.data.url;
+    }
+
     const response = await this.httpClient.get<{ url: string }>(
       `/api/v1/chats/${chatId}/attendees/${attendeeId}/picture`,
       {},
@@ -226,6 +357,15 @@ export class MessagingService {
    * @returns InMail credit balance
    */
   async getInMailCredits(accountId: string): Promise<InMailCreditBalance> {
+    if (this.isV2()) {
+      const response = await this.httpClient.get<InMailCreditBalance>(
+        this.accountPath(accountId, '/linkedin/inmail-credits'),
+        {},
+        accountId,
+      );
+      return response.data;
+    }
+
     const response = await this.httpClient.get<InMailCreditBalance>(
       '/api/v1/linkedin/inmail/credits',
       { account_id: accountId },
@@ -240,6 +380,15 @@ export class MessagingService {
    * @param accountId - Account identifier
    */
   async markChatAsRead(chatId: string, accountId: string): Promise<void> {
+    if (this.isV2()) {
+      await this.updateChat({
+        accountId,
+        chatId,
+        readStatus: 'read',
+      });
+      return;
+    }
+
     await this.httpClient.post(
       `/api/v1/chats/${chatId}/read`,
       { account_id: accountId },
@@ -253,6 +402,15 @@ export class MessagingService {
    * @param accountId - Account identifier
    */
   async archiveChat(chatId: string, accountId: string): Promise<void> {
+    if (this.isV2()) {
+      await this.updateChat({
+        accountId,
+        chatId,
+        isArchived: true,
+      });
+      return;
+    }
+
     await this.httpClient.post(
       `/api/v1/chats/${chatId}/archive`,
       { account_id: accountId },
@@ -266,6 +424,15 @@ export class MessagingService {
    * @param accountId - Account identifier
    */
   async unarchiveChat(chatId: string, accountId: string): Promise<void> {
+    if (this.isV2()) {
+      await this.updateChat({
+        accountId,
+        chatId,
+        isArchived: false,
+      });
+      return;
+    }
+
     await this.httpClient.post(
       `/api/v1/chats/${chatId}/unarchive`,
       { account_id: accountId },
@@ -279,6 +446,15 @@ export class MessagingService {
    * @param accountId - Account identifier
    */
   async muteChat(chatId: string, accountId: string): Promise<void> {
+    if (this.isV2()) {
+      await this.updateChat({
+        accountId,
+        chatId,
+        mutedUntil: '9999-12-31T23:59:59.999Z',
+      });
+      return;
+    }
+
     await this.httpClient.post(
       `/api/v1/chats/${chatId}/mute`,
       { account_id: accountId },
@@ -292,6 +468,15 @@ export class MessagingService {
    * @param accountId - Account identifier
    */
   async unmuteChat(chatId: string, accountId: string): Promise<void> {
+    if (this.isV2()) {
+      await this.updateChat({
+        accountId,
+        chatId,
+        mutedUntil: null,
+      });
+      return;
+    }
+
     await this.httpClient.post(
       `/api/v1/chats/${chatId}/unmute`,
       { account_id: accountId },
@@ -334,6 +519,41 @@ export class MessagingService {
     const response = await this.httpClient.post<Message>(
       `/api/v1/chats/${chatId}/messages/${messageId}/forward`,
       { target_chat_id: targetChatId },
+    );
+    return response.data;
+  }
+
+  /**
+   * Updates v2 chat state such as read status, mute, and archive state.
+   * @param request - v2 chat update request
+   */
+  async updateChat(request: UpdateChatRequest): Promise<void> {
+    await this.httpClient.patch(
+      this.accountPath(request.accountId, `/chats/${encodeURIComponent(request.chatId)}`),
+      {
+        read_status: request.readStatus,
+        muted_until: request.mutedUntil,
+        is_archived: request.isArchived,
+      },
+      request.accountId,
+    );
+  }
+
+  /**
+   * Downloads a v2 message attachment.
+   * @param request - v2 attachment download request
+   * @returns Attachment payload returned by the API
+   */
+  async downloadAttachment<T = unknown>(request: DownloadAttachmentRequest): Promise<T> {
+    const response = await this.httpClient.get<T>(
+      this.accountPath(
+        request.accountId,
+        `/chats/${encodeURIComponent(request.chatId)}/messages/${encodeURIComponent(
+          request.messageId,
+        )}/attachments/${encodeURIComponent(request.attachmentId)}`,
+      ),
+      {},
+      request.accountId,
     );
     return response.data;
   }

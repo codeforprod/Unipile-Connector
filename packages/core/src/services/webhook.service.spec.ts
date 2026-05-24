@@ -11,6 +11,7 @@ type MockedHttpClient = {
   patch: Mock;
   delete: Mock;
   request: Mock;
+  getApiVersion?: Mock;
 };
 
 describe('WebhookService', () => {
@@ -204,6 +205,59 @@ describe('WebhookService', () => {
       const result = webhookService.verifySignature('payload', 'signature', 'secret');
       // The current implementation returns false as it's a placeholder
       expect(typeof result).toBe('boolean');
+    });
+  });
+
+  describe('v2 endpoints', () => {
+    beforeEach(() => {
+      mockHttpClient.getApiVersion = jest.fn().mockReturnValue('v2');
+    });
+
+    it('should list, create, and delete webhook endpoints', async () => {
+      mockHttpClient.get.mockResolvedValue({
+        data: {
+          items: [{ id: 'we-1', url: 'https://example.com/webhook' }],
+          cursor: null,
+        },
+      });
+      mockHttpClient.post.mockResolvedValue({
+        data: { id: 'we-1', url: 'https://example.com/webhook' },
+      });
+      mockHttpClient.delete.mockResolvedValue({ data: undefined });
+
+      await webhookService.list(20);
+      await webhookService.create({
+        url: 'https://example.com/webhook',
+        source: WebhookSource.MESSAGING,
+        events: [WebhookEvent.MESSAGE_RECEIVED],
+      });
+      await webhookService.delete('we-1');
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith('/webhooks/endpoints', {
+        limit: 20,
+        cursor: undefined,
+      });
+      expect(mockHttpClient.post).toHaveBeenCalledWith('/webhooks/endpoints', {
+        url: 'https://example.com/webhook',
+        events: [WebhookEvent.MESSAGE_RECEIVED],
+        headers: undefined,
+        account_ids: undefined,
+        secret: undefined,
+      });
+      expect(mockHttpClient.delete).toHaveBeenCalledWith('/webhooks/endpoints/we-1');
+    });
+
+    it('should expose event type helper', async () => {
+      mockHttpClient.get.mockResolvedValue({
+        data: {
+          items: [{ id: 'message.new', name: 'Message new' }],
+        },
+      });
+
+      const result = await webhookService.listEventTypes();
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith('/webhooks/event-types');
+      expect(result).toEqual([{ id: 'message.new', name: 'Message new' }]);
     });
   });
 });

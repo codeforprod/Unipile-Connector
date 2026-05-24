@@ -12,6 +12,9 @@ pnpm add @prodforcode/unipile-nestjs @prodforcode/unipile-core
 yarn add @prodforcode/unipile-nestjs @prodforcode/unipile-core
 ```
 
+The package ships dual ESM/CommonJS output so NestJS projects compiled to
+CommonJS can use the same package version as ESM consumers.
+
 ## Quick Start
 
 ### Basic Configuration
@@ -51,6 +54,25 @@ import { UnipileModule } from '@prodforcode/unipile-nestjs';
         enableRetry: true,
         timeout: 60000,
       }),
+      isGlobal: true,
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+### v2 Configuration
+
+```typescript
+import { Module } from '@nestjs/common';
+import { UnipileModule } from '@prodforcode/unipile-nestjs';
+
+@Module({
+  imports: [
+    UnipileModule.forRoot({
+      apiVersion: 'v2',
+      apiKey: process.env.UNIPILE_API_KEY,
+      // apiBaseUrl defaults to https://api.unipile.com/v2
       isGlobal: true,
     }),
   ],
@@ -135,14 +157,14 @@ export class MyService {
 
 ## Available Injection Tokens
 
-| Decorator | Token | Type |
-|-----------|-------|------|
-| `@InjectUnipileClient()` | `UNIPILE_CLIENT` | `UnipileClient` |
-| `@InjectAccountService()` | `UNIPILE_ACCOUNT_SERVICE` | `AccountService` |
-| `@InjectEmailService()` | `UNIPILE_EMAIL_SERVICE` | `EmailService` |
+| Decorator                   | Token                       | Type               |
+| --------------------------- | --------------------------- | ------------------ |
+| `@InjectUnipileClient()`    | `UNIPILE_CLIENT`            | `UnipileClient`    |
+| `@InjectAccountService()`   | `UNIPILE_ACCOUNT_SERVICE`   | `AccountService`   |
+| `@InjectEmailService()`     | `UNIPILE_EMAIL_SERVICE`     | `EmailService`     |
 | `@InjectMessagingService()` | `UNIPILE_MESSAGING_SERVICE` | `MessagingService` |
-| `@InjectLinkedInService()` | `UNIPILE_LINKEDIN_SERVICE` | `LinkedInService` |
-| `@InjectWebhookService()` | `UNIPILE_WEBHOOK_SERVICE` | `WebhookService` |
+| `@InjectLinkedInService()`  | `UNIPILE_LINKEDIN_SERVICE`  | `LinkedInService`  |
+| `@InjectWebhookService()`   | `UNIPILE_WEBHOOK_SERVICE`   | `WebhookService`   |
 
 ## Example Controller
 
@@ -195,9 +217,7 @@ import {
 
 @Controller('webhooks')
 export class WebhookController {
-  constructor(
-    @InjectWebhookService() private readonly webhooks: WebhookService,
-  ) {}
+  constructor(@InjectWebhookService() private readonly webhooks: WebhookService) {}
 
   @Post('unipile')
   async handleWebhook(
@@ -225,8 +245,14 @@ export class WebhookController {
 
 ```typescript
 interface UnipileModuleOptions {
-  /** API domain:port (e.g., "api6.unipile.com:13624") */
-  dsn: string;
+  /** API domain:port for v1 mode (e.g., "api6.unipile.com:13624") */
+  dsn?: string;
+
+  /** Explicit API base URL; v2 defaults to https://api.unipile.com/v2 */
+  apiBaseUrl?: string;
+
+  /** API route family (default: "v1") */
+  apiVersion?: 'v1' | 'v2';
 
   /** API access token */
   apiKey: string;

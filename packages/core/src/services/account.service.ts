@@ -11,6 +11,11 @@ import type {
   HostedAuthLink,
   CreateHostedAuthLinkRequest,
   ReconnectAccountRequest,
+  AuthIntent,
+  AuthLink,
+  CreateAuthIntentRequest,
+  CreateAuthLinkRequest,
+  ResolveAuthCheckpointRequest,
   PaginatedResponse,
   PaginationOptions,
 } from '../interfaces/index.js';
@@ -148,6 +153,81 @@ export class AccountService {
       state: request.state,
     });
     return response.data;
+  }
+
+  /**
+   * Creates a v2 native authentication intent.
+   * @param request - v2 auth intent parameters
+   * @returns Created auth intent
+   */
+  async createAuthIntent(request: CreateAuthIntentRequest): Promise<AuthIntent> {
+    const response = await this.httpClient.post<AuthIntent>('/auth/intent', {
+      type: request.type,
+      provider: request.provider,
+      account_id: request.accountId,
+      username: request.username,
+      password: request.password,
+      cookies: request.cookies,
+      code: request.code,
+      redirect_uri: request.redirectUri,
+      ...request.payload,
+    });
+    return response.data;
+  }
+
+  /**
+   * Creates a v2 hosted authentication link.
+   * @param request - v2 hosted auth link parameters
+   * @returns Hosted authentication link
+   */
+  async createAuthLink(request: CreateAuthLinkRequest): Promise<AuthLink> {
+    const response = await this.httpClient.post<AuthLink>('/auth/link', {
+      type: request.type,
+      providers: request.providers,
+      account_id: request.accountId,
+      api_url: request.apiUrl,
+      expiresOn: request.expiresOn,
+      success_redirect_url: request.successRedirectUrl,
+      failure_redirect_url: request.failureRedirectUrl,
+      notify_url: request.notifyUrl,
+      name: request.name,
+      ...request.payload,
+    });
+    return response.data;
+  }
+
+  /**
+   * Resolves a v2 authentication checkpoint using intent_id.
+   * @param request - v2 checkpoint resolution parameters
+   * @returns Updated auth intent or account response
+   */
+  async resolveAuthCheckpoint(
+    request: ResolveAuthCheckpointRequest,
+  ): Promise<AuthIntent | Account> {
+    const response = await this.httpClient.post<AuthIntent | Account>('/auth/checkpoint', {
+      intent_id: request.intentId,
+      code: request.code,
+      captcha_solution: request.captchaSolution,
+      ...request.payload,
+    });
+    return response.data;
+  }
+
+  /**
+   * Starts a v2 reconnect flow through an auth intent.
+   * @param accountId - Existing account ID
+   * @param request - Additional auth intent fields
+   * @returns Created reconnect auth intent
+   */
+  async reconnectWithAuthIntent(
+    accountId: string,
+    request: Omit<CreateAuthIntentRequest, 'type' | 'accountId'> = {},
+  ): Promise<AuthIntent> {
+    return this.createAuthIntent({
+      ...request,
+      type: 'reconnect',
+      accountId,
+    });
   }
 
   /**

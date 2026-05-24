@@ -1,34 +1,38 @@
 {
   "name": "@prodforcode/unipile-core",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "description": "Framework-agnostic Unipile API client for email, messaging, and LinkedIn Sales Navigator",
   "license": "MIT",
   "author": "AIRIS Team",
   "repository": {
     "type": "git",
-    "url": "https://github.com/codeforprod/Unipile-Connector",
+    "url": "git+https://github.com/codeforprod/Unipile-Connector.git",
     "directory": "packages/core"
   },
   "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
     },
     "./interfaces": {
-      "types": "./dist/interfaces/index.d.ts",
-      "import": "./dist/interfaces/index.js"
+      "types": "./dist/esm/interfaces/index.d.ts",
+      "import": "./dist/esm/interfaces/index.js",
+      "require": "./dist/cjs/interfaces/index.js"
     },
     "./enums": {
-      "types": "./dist/enums/index.d.ts",
-      "import": "./dist/enums/index.js"
+      "types": "./dist/esm/enums/index.d.ts",
+      "import": "./dist/esm/enums/index.js",
+      "require": "./dist/cjs/enums/index.js"
     },
     "./services": {
-      "types": "./dist/services/index.d.ts",
-      "import": "./dist/services/index.js"
+      "types": "./dist/esm/services/index.d.ts",
+      "import": "./dist/esm/services/index.js",
+      "require": "./dist/cjs/services/index.js"
     }
   },
   "files": [
@@ -36,7 +40,9 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "rm -rf dist && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && node ../../scripts/write-cjs-package-json.mjs .",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
     "dev": "tsc -p tsconfig.build.json --watch",
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
     "test:cov": "NODE_OPTIONS='--experimental-vm-modules' jest --coverage",

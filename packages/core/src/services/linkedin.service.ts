@@ -11,6 +11,14 @@ import type {
   GetSearchParametersRequest,
   EnrichCompanyRequest,
   EnrichPersonRequest,
+  CreatePostCommentRequest,
+  GetLinkedInSearchParametersV2Request,
+  LinkedInRouteGroup,
+  LinkedInSearchV2Request,
+  ListPostsRequest,
+  RawLinkedInRequest,
+  ReactToPostRequest,
+  SendInvitationRequest,
 } from '../interfaces/index.js';
 
 /**
@@ -27,6 +35,22 @@ interface SearchParametersResponse {
  */
 export class LinkedInService {
   constructor(private readonly httpClient: HttpClient) {}
+
+  private isV2(): boolean {
+    return this.httpClient.getApiVersion?.() === 'v2';
+  }
+
+  private accountPath(accountId: string, path: string): string {
+    return `/${encodeURIComponent(accountId)}${path}`;
+  }
+
+  private linkedInSearchBase(routeGroup: LinkedInRouteGroup): string {
+    if (routeGroup === 'classic') {
+      return '/linkedin/search';
+    }
+
+    return `/linkedin/${routeGroup}/search`;
+  }
 
   /**
    * Searches for companies using Sales Navigator filters.
@@ -72,6 +96,10 @@ export class LinkedInService {
    * @returns Enriched company profile
    */
   async enrichCompany(request: EnrichCompanyRequest): Promise<LinkedInCompany> {
+    if (this.isV2()) {
+      return this.getCompanyV2(request.accountId, request.companyIdentifier);
+    }
+
     const response = await this.httpClient.get<LinkedInCompany>(
       '/api/v1/linkedin/companies/enrich',
       {
@@ -89,6 +117,10 @@ export class LinkedInService {
    * @returns Enriched person profile
    */
   async enrichPerson(request: EnrichPersonRequest): Promise<LinkedInPerson> {
+    if (this.isV2()) {
+      return this.getProfileV2(request.accountId, request.personIdentifier);
+    }
+
     const response = await this.httpClient.get<LinkedInPerson>(
       '/api/v1/linkedin/people/enrich',
       {
@@ -106,6 +138,15 @@ export class LinkedInService {
    * @returns List of parameter values
    */
   async getSearchParameters(request: GetSearchParametersRequest): Promise<SearchParameterValue[]> {
+    if (this.isV2()) {
+      return this.getSearchParametersV2({
+        accountId: request.accountId,
+        routeGroup: 'sales-navigator',
+        type: request.type,
+        query: request.query,
+      });
+    }
+
     const response = await this.httpClient.get<SearchParametersResponse>(
       '/api/v1/linkedin/sales-navigator/search-parameters',
       {
@@ -189,6 +230,10 @@ export class LinkedInService {
    * @returns Company profile
    */
   async getCompany(accountId: string, companyUrn: string): Promise<LinkedInCompany> {
+    if (this.isV2()) {
+      return this.getCompanyV2(accountId, companyUrn);
+    }
+
     const response = await this.httpClient.get<LinkedInCompany>(
       `/api/v1/linkedin/companies/${encodeURIComponent(companyUrn)}`,
       { account_id: accountId },
@@ -204,6 +249,10 @@ export class LinkedInService {
    * @returns Person profile
    */
   async getPerson(accountId: string, personUrn: string): Promise<LinkedInPerson> {
+    if (this.isV2()) {
+      return this.getProfileV2(accountId, personUrn);
+    }
+
     const response = await this.httpClient.get<LinkedInPerson>(
       `/api/v1/linkedin/people/${encodeURIComponent(personUrn)}`,
       { account_id: accountId },
@@ -278,11 +327,191 @@ export class LinkedInService {
   }
 
   /**
+   * Sends a raw v2 LinkedIn passthrough request.
+   * @param request - Raw LinkedIn request
+   * @returns Raw response from Unipile
+   */
+  async rawRequest<T = unknown>(request: RawLinkedInRequest): Promise<T> {
+    const response = await this.httpClient.post<T>(
+      this.accountPath(request.accountId, '/linkedin'),
+      {
+        url: request.url,
+        method: request.method,
+        body: request.body,
+        headers: request.headers,
+        bypass_url_encoding: request.bypassUrlEncoding,
+      },
+      request.accountId,
+    );
+    return response.data;
+  }
+
+  /**
+   * Gets a v2 LinkedIn company profile by company ID.
+   * @param accountId - Account ID
+   * @param companyId - Company ID
+   * @returns Company profile
+   */
+  async getCompanyV2(accountId: string, companyId: string): Promise<LinkedInCompany> {
+    const response = await this.httpClient.get<LinkedInCompany>(
+      this.accountPath(accountId, `/linkedin/company/${encodeURIComponent(companyId)}`),
+      {},
+      accountId,
+    );
+    return response.data;
+  }
+
+  /**
+   * Gets a v2 LinkedIn user/profile by user ID.
+   * @param accountId - Account ID
+   * @param userId - User ID
+   * @returns Person profile
+   */
+  async getProfileV2(accountId: string, userId: string): Promise<LinkedInPerson> {
+    const response = await this.httpClient.get<LinkedInPerson>(
+      this.accountPath(accountId, `/users/${encodeURIComponent(userId)}`),
+      {},
+      accountId,
+    );
+    return response.data;
+  }
+
+  /**
+   * Gets v2 LinkedIn InMail credits.
+   * @param accountId - Account ID
+   * @returns InMail credit response
+   */
+  async getInMailCreditsV2<T = unknown>(accountId: string): Promise<T> {
+    const response = await this.httpClient.get<T>(
+      this.accountPath(accountId, '/linkedin/inmail-credits'),
+      {},
+      accountId,
+    );
+    return response.data;
+  }
+
+  /**
+   * Gets product-specific v2 LinkedIn search parameters.
+   * @param request - Search parameter request
+   * @returns Search parameter values
+   */
+  async getSearchParametersV2(
+    request: GetLinkedInSearchParametersV2Request,
+  ): Promise<SearchParameterValue[]> {
+    const response = await this.httpClient.get<SearchParametersResponse>(
+      this.accountPath(
+        request.accountId,
+        `${this.linkedInSearchBase(request.routeGroup)}/parameters`,
+      ),
+      {
+        type: request.type,
+        query: request.query,
+        limit: request.limit,
+      },
+      request.accountId,
+    );
+    return response.data.items ?? response.data.values ?? [];
+  }
+
+  /**
+   * Runs a generic v2 LinkedIn search in a product-specific route group.
+   * @param request - v2 search request
+   * @returns Raw search response
+   */
+  async searchV2<T = unknown>(request: LinkedInSearchV2Request): Promise<T> {
+    const response = await this.httpClient.post<T>(
+      this.accountPath(request.accountId, this.linkedInSearchBase(request.routeGroup)),
+      {
+        filters: request.filters,
+        url: request.url,
+        limit: request.limit,
+        offset: request.offset,
+      },
+      request.accountId,
+    );
+    return response.data;
+  }
+
+  /**
+   * Sends a v2 invitation request.
+   * @param request - Invitation request
+   */
+  async sendInvitation(request: SendInvitationRequest): Promise<void> {
+    await this.httpClient.post(
+      this.accountPath(request.accountId, '/users/invite'),
+      {
+        user_id: request.userId,
+        message: request.message,
+        user_email: request.userEmail,
+      },
+      request.accountId,
+    );
+  }
+
+  /**
+   * Lists v2 social posts for a user or company.
+   * @param request - Post list request
+   * @returns Raw post list response
+   */
+  async listPosts<T = unknown>(request: ListPostsRequest): Promise<T> {
+    const response = await this.httpClient.get<T>(
+      this.accountPath(request.accountId, `/users/${encodeURIComponent(request.userId)}/posts`),
+      {
+        limit: request.limit,
+        cursor: request.cursor,
+        offset: request.offset,
+      },
+      request.accountId,
+    );
+    return response.data;
+  }
+
+  /**
+   * Adds a v2 reaction to a post.
+   * @param request - Reaction request
+   */
+  async reactToPost(request: ReactToPostRequest): Promise<void> {
+    await this.httpClient.post(
+      this.accountPath(request.accountId, `/posts/${encodeURIComponent(request.postId)}/reactions`),
+      {
+        reaction: request.reaction,
+        react_as: request.reactAs,
+      },
+      request.accountId,
+    );
+  }
+
+  /**
+   * Lists v2 comments for a post.
+   * @param accountId - Account ID
+   * @param postId - Post ID
+   * @returns Raw comment list response
+   */
+  async listPostComments<T = unknown>(accountId: string, postId: string): Promise<T> {
+    const response = await this.httpClient.get<T>(
+      this.accountPath(accountId, `/posts/${encodeURIComponent(postId)}/comments`),
+      {},
+      accountId,
+    );
+    return response.data;
+  }
+
+  /**
+   * Creates a v2 post comment.
+   * @param request - Comment request
+   */
+  async createPostComment(request: CreatePostCommentRequest): Promise<void> {
+    await this.httpClient.post(
+      this.accountPath(request.accountId, `/posts/${encodeURIComponent(request.postId)}/comments`),
+      { text: request.text },
+      request.accountId,
+    );
+  }
+
+  /**
    * Builds company search filters in API format.
    */
-  private buildCompanyFilters(
-    filters: CompanySearchRequest['filters'],
-  ): Record<string, unknown> {
+  private buildCompanyFilters(filters: CompanySearchRequest['filters']): Record<string, unknown> {
     const apiFilters: Record<string, unknown> = {};
 
     if (filters.keywords !== undefined) {

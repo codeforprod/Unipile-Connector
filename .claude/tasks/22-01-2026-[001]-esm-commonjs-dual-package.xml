@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<task_assignment>
+    <header>
+        <task_id>esm-commonjs-dual-package-001</task_id>
+        <project_name>Unipile-Connector (AIRIS)</project_name>
+        <target_agent_role>@~/.claude/agents/TECHNICAL_LEAD_PROMPT.xml</target_agent_role>
+        <priority>high</priority>
+        <labels>
+            <label>blocker</label>
+            <label>esm</label>
+            <label>commonjs</label>
+            <label>typescript</label>
+            <label>nestjs</label>
+        </labels>
+        <created_date>2026-01-22</created_date>
+        <verification_status>VERIFIED</verification_status>
+        <verification_coverage>100%</verification_coverage>
+    </header>
+
+    <objective>
+        <title>Implement ESM/CommonJS Dual Package Support</title>
+        <description>
+            Fix blocker: @prodforcode/unipile-core@0.2.0 (ESM-only) cannot be imported
+            by NestJS (CommonJS). Implement dual package exports with separate ESM and
+            CommonJS builds for compatibility.
+        </description>
+    </objective>
+
+    <resources>
+        <knowledge_base>/Users/oleksii/Projects/Node/CallAiris/Unipile-Connector/.claude/knowledge-base/esm-commonjs-dual-package-kb.md</knowledge_base>
+    </resources>
+
+    <requirements>
+        <functional>
+            <req id="FR-1" priority="critical">ESM import support</req>
+            <req id="FR-2" priority="critical">CommonJS require support</req>
+            <req id="FR-3" priority="high">Subpath exports (/interfaces, /enums, /services)</req>
+            <req id="FR-4" priority="high">TypeScript types in both formats</req>
+            <req id="FR-5" priority="critical">Backward compatibility for ESM</req>
+        </functional>
+        <technical>
+            <req id="TR-1" priority="critical">Dual build pipeline (dist/esm/, dist/cjs/)</req>
+            <req id="TR-2" priority="critical">Conditional exports (import/require)</req>
+            <req id="TR-3" priority="high">File extensions (.js for ESM, .cjs for CJS)</req>
+            <req id="TR-6" priority="high">Build scripts update</req>
+            <req id="TR-7" priority="medium">Version bump to 0.3.0</req>
+        </technical>
+    </requirements>
+
+    <implementation>
+        <phase order="1" hours="1-2">Configuration: Create tsconfig.esm.json, tsconfig.cjs.json</phase>
+        <phase order="2" hours="1">Build Scripts: Update package.json scripts</phase>
+        <phase order="3" hours="1">Package Config: Update exports field, bump version</phase>
+        <phase order="4" hours="1-2">Build and Validate: Test ESM/CJS imports</phase>
+        <phase order="5" hours="2">NestJS Integration: Test in Unipile-Connector</phase>
+        <phase order="6" hours="1-2">Documentation: Update CHANGELOG, README</phase>
+    </implementation>
+
+    <acceptance_criteria count="26">
+        <build>6 criteria - directories, extensions, markers</build>
+        <functionality>7 criteria - ESM/CJS imports, types, subpaths</functionality>
+        <nestjs>5 criteria - app start, imports, tests</nestjs>
+        <package>6 criteria - exports field, version, extensions</package>
+        <docs>2 criteria - CHANGELOG, README</docs>
+    </acceptance_criteria>
+
+    <effort>6-10 hours total</effort>
+</task_assignment>

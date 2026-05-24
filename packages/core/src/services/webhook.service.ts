@@ -1,6 +1,13 @@
 import { createHmac } from 'node:crypto';
 import type { HttpClient } from '../http/http-client.js';
-import type { Webhook, CreateWebhookRequest, PaginatedResponse } from '../interfaces/index.js';
+import type {
+  Webhook,
+  CreateWebhookRequest,
+  CreateWebhookEndpointRequest,
+  PaginatedResponse,
+  WebhookEndpoint,
+  WebhookEventType,
+} from '../interfaces/index.js';
 
 /**
  * API response shape for webhook list.
@@ -19,6 +26,10 @@ interface WebhookListResponse {
 export class WebhookService {
   constructor(private readonly httpClient: HttpClient) {}
 
+  private isV2(): boolean {
+    return this.httpClient.getApiVersion?.() === 'v2';
+  }
+
   /**
    * Lists all configured webhooks.
    * @param limit - Maximum results per page
@@ -26,6 +37,18 @@ export class WebhookService {
    * @returns Paginated list of webhooks
    */
   async list(limit?: number, cursor?: string): Promise<PaginatedResponse<Webhook>> {
+    if (this.isV2()) {
+      const response = await this.httpClient.get<WebhookListResponse>('/webhooks/endpoints', {
+        limit,
+        cursor,
+      });
+
+      return {
+        items: response.data.items ?? response.data.webhooks ?? [],
+        cursor: response.data.cursor ?? response.data.next_cursor ?? null,
+      };
+    }
+
     const response = await this.httpClient.get<WebhookListResponse>('/api/v1/webhooks', {
       limit,
       cursor,
@@ -43,6 +66,13 @@ export class WebhookService {
    * @returns Webhook details
    */
   async get(webhookId: string): Promise<Webhook> {
+    if (this.isV2()) {
+      const response = await this.httpClient.get<Webhook>(
+        `/webhooks/endpoints/${encodeURIComponent(webhookId)}`,
+      );
+      return response.data;
+    }
+
     const response = await this.httpClient.get<Webhook>(`/api/v1/webhooks/${webhookId}`);
     return response.data;
   }
@@ -53,6 +83,17 @@ export class WebhookService {
    * @returns Created webhook
    */
   async create(request: CreateWebhookRequest): Promise<Webhook> {
+    if (this.isV2()) {
+      const response = await this.httpClient.post<Webhook>('/webhooks/endpoints', {
+        url: request.url,
+        events: request.events,
+        headers: request.headers,
+        account_ids: request.accountIds,
+        secret: request.secret,
+      });
+      return response.data;
+    }
+
     const response = await this.httpClient.post<Webhook>('/api/v1/webhooks', {
       url: request.url,
       source: request.source,
@@ -69,7 +110,39 @@ export class WebhookService {
    * @param webhookId - Webhook identifier
    */
   async delete(webhookId: string): Promise<void> {
+    if (this.isV2()) {
+      await this.httpClient.delete(`/webhooks/endpoints/${encodeURIComponent(webhookId)}`);
+      return;
+    }
+
     await this.httpClient.delete(`/api/v1/webhooks/${webhookId}`);
+  }
+
+  /**
+   * Creates a v2 webhook endpoint.
+   * @param request - v2 endpoint request
+   * @returns Created webhook endpoint
+   */
+  async createEndpoint(request: CreateWebhookEndpointRequest): Promise<WebhookEndpoint> {
+    const response = await this.httpClient.post<WebhookEndpoint>('/webhooks/endpoints', {
+      url: request.url,
+      events: request.events,
+      secret: request.secret,
+      headers: request.headers,
+    });
+    return response.data;
+  }
+
+  /**
+   * Lists v2 webhook event types.
+   * @returns Event type metadata
+   */
+  async listEventTypes(): Promise<WebhookEventType[]> {
+    const response = await this.httpClient.get<{
+      items?: WebhookEventType[];
+      event_types?: WebhookEventType[];
+    }>('/webhooks/event-types');
+    return response.data.items ?? response.data.event_types ?? [];
   }
 
   /**
@@ -161,11 +234,7 @@ export class WebhookService {
    * @param secret - Optional secret for signature verification
    * @returns Created webhook
    */
-  async createEmailWebhook(
-    url: string,
-    accountIds?: string[],
-    secret?: string,
-  ): Promise<Webhook> {
+  async createEmailWebhook(url: string, accountIds?: string[], secret?: string): Promise<Webhook> {
     const { WebhookSource, WebhookEvent } = await import('../enums/index.js');
     return this.create({
       url,

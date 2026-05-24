@@ -1,12 +1,36 @@
 /**
+ * Supported Unipile API route families.
+ */
+export type UnipileApiVersion = 'v1' | 'v2';
+
+/**
+ * Default v2 API base URL.
+ */
+export const DEFAULT_V2_API_BASE_URL = 'https://api.unipile.com/v2';
+
+/**
  * Configuration options for the Unipile client.
  */
 export interface UnipileConfig {
   /**
    * Unipile API DSN (domain:port format).
+   * Required for v1 mode unless apiBaseUrl is provided.
    * @example "api6.unipile.com:13624"
    */
-  dsn: string;
+  dsn?: string;
+
+  /**
+   * Explicit API base URL.
+   * In v2 mode this defaults to https://api.unipile.com/v2.
+   * @example "https://api.unipile.com/v2"
+   */
+  apiBaseUrl?: string;
+
+  /**
+   * API route family to target.
+   * @default "v1"
+   */
+  apiVersion?: UnipileApiVersion;
 
   /**
    * Unipile API access token.
@@ -53,7 +77,8 @@ export interface UnipileConfig {
 /**
  * Default configuration values.
  */
-export const DEFAULT_CONFIG: Required<Omit<UnipileConfig, 'dsn' | 'apiKey'>> = {
+export const DEFAULT_CONFIG: Required<Omit<UnipileConfig, 'dsn' | 'apiBaseUrl' | 'apiKey'>> = {
+  apiVersion: 'v1',
   useHttp: false,
   timeout: 30000,
   enableRetry: true,

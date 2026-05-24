@@ -367,6 +367,8 @@ export type SearchParameterType =
   | 'revenue_range'
   | 'technology';
 
+export type LinkedInSearchParameterV2Type = SearchParameterType | (string & Record<never, never>);
+
 /**
  * Get search parameters request.
  */
@@ -401,4 +403,131 @@ export interface EnrichPersonRequest {
 
   /** Person URN or LinkedIn URL */
   personIdentifier: string;
+}
+
+/**
+ * LinkedIn v2 route group.
+ */
+export type LinkedInRouteGroup = 'classic' | 'recruiter' | 'sales-navigator';
+
+/**
+ * Raw LinkedIn v2 passthrough request.
+ */
+export interface RawLinkedInRequest {
+  /** Account ID in the v2 path */
+  accountId: string;
+
+  /** LinkedIn URL or path to request */
+  url: string;
+
+  /** HTTP method used by Unipile for the provider call */
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+
+  /** Optional provider request body */
+  body?: unknown;
+
+  /** Optional provider request headers */
+  headers?: Record<string, string>;
+
+  /** Whether Unipile should bypass URL encoding */
+  bypassUrlEncoding?: boolean;
+}
+
+/**
+ * v2 LinkedIn search parameter request.
+ */
+export interface GetLinkedInSearchParametersV2Request {
+  /** Account ID in the v2 path */
+  accountId: string;
+
+  /** Product route group */
+  routeGroup: LinkedInRouteGroup;
+
+  /** Parameter type */
+  type: LinkedInSearchParameterV2Type;
+
+  /** Search query */
+  query?: string;
+
+  /** Maximum number of values */
+  limit?: number;
+}
+
+/**
+ * Generic v2 LinkedIn search request.
+ */
+export interface LinkedInSearchV2Request extends PaginationOptions {
+  /** Account ID in the v2 path */
+  accountId: string;
+
+  /** Product route group */
+  routeGroup: LinkedInRouteGroup;
+
+  /** Search filters in v2 API shape */
+  filters?: Record<string, unknown>;
+
+  /** Search URL override when supported by the route */
+  url?: string;
+
+  /** Offset-based pagination for v2 search endpoints */
+  offset?: number;
+}
+
+/**
+ * v2 social post list request.
+ */
+export interface ListPostsRequest extends PaginationOptions {
+  /** Account ID in the v2 path */
+  accountId: string;
+
+  /** User or company ID in the v2 path */
+  userId: string;
+}
+
+/**
+ * v2 post reaction request.
+ */
+export interface ReactToPostRequest {
+  /** Account ID in the v2 path */
+  accountId: string;
+
+  /** Post ID */
+  postId: string;
+
+  /** v2 reaction value */
+  reaction: string;
+
+  /** Optional actor organization */
+  reactAs?: string;
+}
+
+/**
+ * v2 post comment request.
+ */
+export interface CreatePostCommentRequest {
+  /** Account ID in the v2 path */
+  accountId: string;
+
+  /** Post ID */
+  postId: string;
+
+  /** Comment text */
+  text: string;
+}
+
+/**
+ * v2 invitation request.
+ */
+export interface SendInvitationRequest {
+  /** Account ID in the v2 path */
+  accountId: string;
+
+  /** Provider/user ID to invite */
+  userId: string;
+
+  /** Optional invitation message */
+  message?: string;
+
+  /** Optional user email when required by LinkedIn */
+  userEmail?: string;
 }

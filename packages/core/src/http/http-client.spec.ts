@@ -46,6 +46,61 @@ describe('HttpClient', () => {
       });
       expect(client).toBeDefined();
     });
+
+    it('should target the default v2 base URL without a DSN', async () => {
+      const client = new HttpClient({
+        apiVersion: 'v2',
+        apiKey: 'test-key',
+        enableRetry: false,
+      });
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: jest.fn().mockResolvedValue({ ok: true }),
+      });
+
+      await client.get('/auth/intent');
+
+      expect(client.getApiVersion()).toBe('v2');
+      expect(client.getBaseUrl()).toBe('https://api.unipile.com/v2');
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.unipile.com/v2/auth/intent',
+        expect.objectContaining({ method: 'GET' }),
+      );
+    });
+
+    it('should infer v2 mode from apiBaseUrl and preserve nested base paths', async () => {
+      const client = new HttpClient({
+        apiBaseUrl: 'https://proxy.example.com/unipile/v2/',
+        apiKey: 'test-key',
+        enableRetry: false,
+      });
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: new Headers({ 'content-type': 'application/json' }),
+        json: jest.fn().mockResolvedValue({ ok: true }),
+      });
+
+      await client.post('/auth/link', {});
+
+      expect(client.getApiVersion()).toBe('v2');
+      expect(client.getBaseUrl()).toBe('https://proxy.example.com/unipile/v2');
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://proxy.example.com/unipile/v2/auth/link',
+        expect.objectContaining({ method: 'POST' }),
+      );
+    });
+
+    it('should require dsn in v1 mode', () => {
+      expect(
+        () =>
+          new HttpClient({
+            apiKey: 'test-key',
+          }),
+      ).toThrow('Unipile dsn is required in v1 mode');
+    });
   });
 
   describe('request', () => {

@@ -15,6 +15,7 @@ export {
 // Interfaces
 export type {
   UnipileConfig,
+  UnipileApiVersion,
   PaginatedResponse,
   PaginationOptions,
   ApiResponse,
@@ -31,6 +32,12 @@ export type {
   HostedAuthLink,
   CreateHostedAuthLinkRequest,
   ReconnectAccountRequest,
+  AuthIntentType,
+  CreateAuthIntentRequest,
+  AuthIntent,
+  CreateAuthLinkRequest,
+  AuthLink,
+  ResolveAuthCheckpointRequest,
   EmailAddress,
   Email,
   EmailTracking,
@@ -40,6 +47,7 @@ export type {
   EmailFolder,
   ListEmailsOptions,
   CreateDraftRequest,
+  EmailCompatibilityBoundary,
   ChatAttendee,
   Chat,
   Message,
@@ -51,6 +59,9 @@ export type {
   ListMessagesOptions,
   SendInMailRequest,
   InMailCreditBalance,
+  JsonAttachment,
+  UpdateChatRequest,
+  DownloadAttachmentRequest,
   LinkedInCompany,
   LinkedInPerson,
   LinkedInPosition,
@@ -64,9 +75,18 @@ export type {
   PeopleSearchResult,
   SearchParameterValue,
   SearchParameterType,
+  LinkedInSearchParameterV2Type,
   GetSearchParametersRequest,
   EnrichCompanyRequest,
   EnrichPersonRequest,
+  LinkedInRouteGroup,
+  RawLinkedInRequest,
+  GetLinkedInSearchParametersV2Request,
+  LinkedInSearchV2Request,
+  ListPostsRequest,
+  ReactToPostRequest,
+  CreatePostCommentRequest,
+  SendInvitationRequest,
   Webhook,
   CreateWebhookRequest,
   MessageReceivedPayload,
@@ -76,9 +96,12 @@ export type {
   AccountStatusChangedPayload,
   WebhookPayload,
   WebhookDelivery,
+  WebhookEndpoint,
+  CreateWebhookEndpointRequest,
+  WebhookEventType,
 } from './interfaces/index.js';
 
-export { DEFAULT_CONFIG } from './interfaces/index.js';
+export { DEFAULT_CONFIG, DEFAULT_V2_API_BASE_URL } from './interfaces/index.js';
 
 // Services (for advanced usage)
 export {

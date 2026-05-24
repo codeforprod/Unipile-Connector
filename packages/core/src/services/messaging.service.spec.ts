@@ -11,6 +11,7 @@ type MockedHttpClient = {
   patch: Mock;
   delete: Mock;
   request: Mock;
+  getApiVersion?: Mock;
 };
 
 describe('MessagingService', () => {
@@ -594,6 +595,109 @@ describe('MessagingService', () => {
         { target_chat_id: 'chat-2' },
       );
       expect(result).toEqual(mockMessage);
+    });
+  });
+
+  describe('v2 route construction', () => {
+    beforeEach(() => {
+      mockHttpClient.getApiVersion = jest.fn().mockReturnValue('v2');
+    });
+
+    it('should list chats with account_id in the path only', async () => {
+      mockHttpClient.get.mockResolvedValue({
+        data: { items: [], cursor: null },
+      });
+
+      await messagingService.listChats({
+        accountId: 'acc-1',
+        limit: 50,
+      });
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
+        '/acc-1/chats',
+        {
+          has_unread: undefined,
+          include_archived: undefined,
+          limit: 50,
+          cursor: undefined,
+        },
+        'acc-1',
+      );
+    });
+
+    it('should send messages through v2 account-scoped route with JSON attachments', async () => {
+      mockHttpClient.post.mockResolvedValue({
+        data: { id: 'msg-1' },
+      });
+
+      await messagingService.sendMessage({
+        accountId: 'acc-1',
+        chatId: 'chat-1',
+        text: 'Hello',
+        attachments: [
+          {
+            id: 'att-1',
+            filename: 'file.pdf',
+            contentType: 'application/pdf',
+            size: 10,
+            content: 'ZmFrZQ==',
+          },
+        ],
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        '/acc-1/chats/chat-1/messages/send',
+        {
+          text: 'Hello',
+          attachments: [
+            {
+              filename: 'file.pdf',
+              content_type: 'application/pdf',
+              data: 'ZmFrZQ==',
+            },
+          ],
+          reply_to: undefined,
+        },
+        'acc-1',
+      );
+    });
+
+    it('should update read and mute state through PATCH', async () => {
+      mockHttpClient.patch.mockResolvedValue({ data: undefined });
+
+      await messagingService.updateChat({
+        accountId: 'acc-1',
+        chatId: 'chat-1',
+        readStatus: 'read',
+        mutedUntil: null,
+      });
+
+      expect(mockHttpClient.patch).toHaveBeenCalledWith(
+        '/acc-1/chats/chat-1',
+        {
+          read_status: 'read',
+          muted_until: null,
+          is_archived: undefined,
+        },
+        'acc-1',
+      );
+    });
+
+    it('should download attachments from the v2 attachment route', async () => {
+      mockHttpClient.get.mockResolvedValue({ data: { data: 'ZmFrZQ==' } });
+
+      await messagingService.downloadAttachment({
+        accountId: 'acc-1',
+        chatId: 'chat-1',
+        messageId: 'msg-1',
+        attachmentId: 'att-1',
+      });
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
+        '/acc-1/chats/chat-1/messages/msg-1/attachments/att-1',
+        {},
+        'acc-1',
+      );
     });
   });
 });

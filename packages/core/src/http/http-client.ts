@@ -1,5 +1,5 @@
-import type { UnipileConfig } from '../interfaces/config.interface.js';
-import { DEFAULT_CONFIG } from '../interfaces/config.interface.js';
+import type { UnipileApiVersion, UnipileConfig } from '../interfaces/config.interface.js';
+import { DEFAULT_CONFIG, DEFAULT_V2_API_BASE_URL } from '../interfaces/config.interface.js';
 import {
   UnipileError,
   TimeoutError,
@@ -57,6 +57,7 @@ export interface HttpResponse<T> {
  */
 export class HttpClient {
   private readonly baseUrl: string;
+  private readonly apiVersion: UnipileApiVersion;
   private readonly apiKey: string;
   private readonly timeout: number;
   private readonly enableRetry: boolean;
@@ -64,8 +65,9 @@ export class HttpClient {
   private readonly rateLimiter: RateLimiter;
 
   constructor(config: UnipileConfig) {
-    const protocol = config.useHttp === true ? 'http' : 'https';
-    this.baseUrl = `${protocol}://${config.dsn}`;
+    this.apiVersion =
+      config.apiVersion ?? (config.apiBaseUrl !== undefined ? 'v2' : DEFAULT_CONFIG.apiVersion);
+    this.baseUrl = this.resolveBaseUrl(config);
     this.apiKey = config.apiKey;
     this.timeout = config.timeout ?? DEFAULT_CONFIG.timeout;
     this.enableRetry = config.enableRetry ?? DEFAULT_CONFIG.enableRetry;
@@ -74,6 +76,29 @@ export class HttpClient {
       config.retryBaseDelay ?? DEFAULT_CONFIG.retryBaseDelay,
       config.retryMaxDelay ?? DEFAULT_CONFIG.retryMaxDelay,
     );
+  }
+
+  private resolveBaseUrl(config: UnipileConfig): string {
+    if (config.apiBaseUrl !== undefined && config.apiBaseUrl.trim() !== '') {
+      return this.normalizeBaseUrl(config.apiBaseUrl);
+    }
+
+    if (this.apiVersion === 'v2') {
+      return DEFAULT_V2_API_BASE_URL;
+    }
+
+    if (config.dsn === undefined || config.dsn.trim() === '') {
+      throw new Error(
+        'Unipile dsn is required in v1 mode. Use apiVersion: "v2" or apiBaseUrl for v2.',
+      );
+    }
+
+    const protocol = config.useHttp === true ? 'http' : 'https';
+    return `${protocol}://${config.dsn}`;
+  }
+
+  private normalizeBaseUrl(baseUrl: string): string {
+    return baseUrl.replace(/\/+$/, '');
   }
 
   /**
@@ -247,10 +272,15 @@ export class HttpClient {
     // Handle not found (404)
     if (response.status === 404) {
       const body = await this.safeParseJson(response);
-      throw new NotFoundError(this.extractErrorMessage(body, 'Resource not found'), undefined, undefined, {
-        ...context,
-        responseBody: body,
-      });
+      throw new NotFoundError(
+        this.extractErrorMessage(body, 'Resource not found'),
+        undefined,
+        undefined,
+        {
+          ...context,
+          responseBody: body,
+        },
+      );
     }
 
     // Handle validation errors (400, 422)
@@ -265,19 +295,29 @@ export class HttpClient {
     // Handle server errors (500+)
     if (response.status >= 500) {
       const body = await this.safeParseJson(response);
-      throw new UnipileError(this.extractErrorMessage(body, 'Server error'), ErrorCategory.UNKNOWN, {
-        ...context,
-        responseBody: body,
-      }, true);
+      throw new UnipileError(
+        this.extractErrorMessage(body, 'Server error'),
+        ErrorCategory.UNKNOWN,
+        {
+          ...context,
+          responseBody: body,
+        },
+        true,
+      );
     }
 
     // Handle other client errors
     if (response.status >= 400) {
       const body = await this.safeParseJson(response);
-      throw new UnipileError(this.extractErrorMessage(body, 'Request failed'), ErrorCategory.UNKNOWN, {
-        ...context,
-        responseBody: body,
-      }, false);
+      throw new UnipileError(
+        this.extractErrorMessage(body, 'Request failed'),
+        ErrorCategory.UNKNOWN,
+        {
+          ...context,
+          responseBody: body,
+        },
+        false,
+      );
     }
 
     // Parse successful response
@@ -302,8 +342,13 @@ export class HttpClient {
   /**
    * Builds the full URL with query parameters.
    */
-  private buildUrl(path: string, params?: Record<string, string | number | boolean | undefined>): string {
-    const url = new URL(path, this.baseUrl);
+  private buildUrl(
+    path: string,
+    params?: Record<string, string | number | boolean | undefined>,
+  ): string {
+    const normalizedBaseUrl = this.baseUrl.endsWith('/') ? this.baseUrl : `${this.baseUrl}/`;
+    const normalizedPath = path.startsWith('/') ? path.slice(1) : path;
+    const url = new URL(normalizedPath, normalizedBaseUrl);
 
     if (params !== undefined) {
       for (const [key, value] of Object.entries(params)) {
@@ -361,9 +406,27 @@ export class HttpClient {
   }
 
   /**
+   * Gets the resolved base URL.
+   */
+  getBaseUrl(): string {
+    return this.baseUrl;
+  }
+
+  /**
+   * Gets the configured API version.
+   */
+  getApiVersion(): UnipileApiVersion {
+    return this.apiVersion;
+  }
+
+  /**
    * Convenience method for GET requests.
    */
-  get<T>(path: string, params?: Record<string, string | number | boolean | undefined>, accountId?: string): Promise<HttpResponse<T>> {
+  get<T>(
+    path: string,
+    params?: Record<string, string | number | boolean | undefined>,
+    accountId?: string,
+  ): Promise<HttpResponse<T>> {
     return this.request<T>({ method: 'GET', path, params, accountId });
   }
 

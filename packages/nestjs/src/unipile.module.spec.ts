@@ -161,6 +161,24 @@ describe('UnipileModule', () => {
     });
   });
 
+  describe('forRoot with v2 config', () => {
+    it('should provide UnipileClient without legacy dsn', async () => {
+      const module = await Test.createTestingModule({
+        imports: [
+          UnipileModule.forRoot({
+            apiVersion: 'v2',
+            apiKey: 'test-api-key',
+          }),
+        ],
+      }).compile();
+
+      const client = module.get(UNIPILE_CLIENT);
+      expect(client).toBeDefined();
+
+      await module.close();
+    });
+  });
+
   describe('forRootAsync validation', () => {
     it('should throw error when no config method provided', () => {
       expect(() => {
@@ -263,6 +281,26 @@ describe('UnipileModule', () => {
               apiKey: 'test-api-key',
             }),
             isGlobal: true,
+          }),
+        ],
+      }).compile();
+
+      const client = module.get(UNIPILE_CLIENT);
+      expect(client).toBeDefined();
+
+      await module.close();
+    });
+  });
+
+  describe('forRootAsync with v2 config', () => {
+    it('should provide UnipileClient without legacy dsn', async () => {
+      const module = await Test.createTestingModule({
+        imports: [
+          UnipileModule.forRootAsync({
+            useFactory: () => ({
+              apiVersion: 'v2',
+              apiKey: 'test-api-key',
+            }),
           }),
         ],
       }).compile();

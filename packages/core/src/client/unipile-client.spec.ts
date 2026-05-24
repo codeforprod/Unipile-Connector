@@ -88,7 +88,28 @@ describe('UnipileClient', () => {
       process.env['UNIPILE_DSN'] = 'api.example.com:443';
       delete process.env['UNIPILE_API_KEY'];
 
-      expect(() => UnipileClient.fromEnv()).toThrow('UNIPILE_API_KEY environment variable is required');
+      expect(() => UnipileClient.fromEnv()).toThrow(
+        'UNIPILE_API_KEY environment variable is required',
+      );
+    });
+
+    it('should create v2 client from UNIPILE_API_BASE_URL without dsn', () => {
+      delete process.env['UNIPILE_DSN'];
+      process.env['UNIPILE_API_BASE_URL'] = 'https://api.unipile.com/v2';
+      process.env['UNIPILE_API_KEY'] = 'env-api-key';
+
+      const envClient = UnipileClient.fromEnv();
+
+      expect(envClient.getHttpClient().getApiVersion()).toBe('v2');
+      expect(envClient.getHttpClient().getBaseUrl()).toBe('https://api.unipile.com/v2');
+    });
+
+    it('should throw for invalid UNIPILE_API_VERSION', () => {
+      process.env['UNIPILE_DSN'] = 'api.example.com:443';
+      process.env['UNIPILE_API_KEY'] = 'env-api-key';
+      process.env['UNIPILE_API_VERSION'] = 'v3';
+
+      expect(() => UnipileClient.fromEnv()).toThrow('UNIPILE_API_VERSION must be "v1" or "v2"');
     });
 
     it('should respect UNIPILE_USE_HTTP flag', () => {

@@ -223,3 +223,54 @@ export interface InMailCreditBalance {
   /** Reset date */
   resetDate?: string;
 }
+
+/**
+ * v2 JSON attachment payload.
+ */
+export interface JsonAttachment {
+  /** Original filename */
+  filename: string;
+
+  /** MIME content type */
+  content_type: string;
+
+  /** Base64 encoded attachment data */
+  data: string;
+}
+
+/**
+ * v2 chat update request.
+ */
+export interface UpdateChatRequest {
+  /** Account ID in the v2 path */
+  accountId: string;
+
+  /** Chat ID */
+  chatId: string;
+
+  /** Read state update */
+  readStatus?: 'read' | 'unread';
+
+  /** Mute expiration timestamp, or null to unmute */
+  mutedUntil?: string | null;
+
+  /** Archive state update */
+  isArchived?: boolean;
+}
+
+/**
+ * v2 attachment download request.
+ */
+export interface DownloadAttachmentRequest {
+  /** Account ID in the v2 path */
+  accountId: string;
+
+  /** Chat ID */
+  chatId: string;
+
+  /** Message ID */
+  messageId: string;
+
+  /** Attachment ID */
+  attachmentId: string;
+}

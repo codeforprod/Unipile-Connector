@@ -438,4 +438,82 @@ describe('AccountService', () => {
       expect(result).toEqual(mockLink);
     });
   });
+
+  describe('v2 auth helpers', () => {
+    it('should create auth intent without account_id in route', async () => {
+      const mockIntent = {
+        id: 'intent-1',
+        status: 'checkpoint_required',
+      };
+      mockHttpClient.post.mockResolvedValue({ data: mockIntent });
+
+      const result = await accountService.createAuthIntent({
+        type: 'create',
+        provider: AccountProvider.LINKEDIN,
+        username: 'user@example.com',
+        password: 'password',
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith('/auth/intent', {
+        type: 'create',
+        provider: AccountProvider.LINKEDIN,
+        account_id: undefined,
+        username: 'user@example.com',
+        password: 'password',
+        cookies: undefined,
+        code: undefined,
+        redirect_uri: undefined,
+      });
+      expect(result).toEqual(mockIntent);
+    });
+
+    it('should create hosted auth link on v2 auth route', async () => {
+      const mockLink = {
+        url: 'https://account.unipile.com/auth-token',
+      };
+      mockHttpClient.post.mockResolvedValue({ data: mockLink });
+
+      const result = await accountService.createAuthLink({
+        type: 'reconnect',
+        providers: '*',
+        accountId: 'acc-1',
+        successRedirectUrl: 'https://example.com/success',
+        notifyUrl: 'https://example.com/unipile/callback',
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith('/auth/link', {
+        type: 'reconnect',
+        providers: '*',
+        account_id: 'acc-1',
+        api_url: undefined,
+        expiresOn: undefined,
+        success_redirect_url: 'https://example.com/success',
+        failure_redirect_url: undefined,
+        notify_url: 'https://example.com/unipile/callback',
+        name: undefined,
+      });
+      expect(result.url).toBe(mockLink.url);
+    });
+
+    it('should resolve checkpoint with intent_id', async () => {
+      const mockIntent = {
+        id: 'intent-1',
+        accountId: 'acc-1',
+        status: 'done',
+      };
+      mockHttpClient.post.mockResolvedValue({ data: mockIntent });
+
+      const result = await accountService.resolveAuthCheckpoint({
+        intentId: 'intent-1',
+        code: '123456',
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith('/auth/checkpoint', {
+        intent_id: 'intent-1',
+        code: '123456',
+        captcha_solution: undefined,
+      });
+      expect(result).toEqual(mockIntent);
+    });
+  });
 });

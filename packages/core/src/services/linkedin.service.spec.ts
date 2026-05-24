@@ -10,6 +10,7 @@ type MockedHttpClient = {
   patch: Mock;
   delete: Mock;
   request: Mock;
+  getApiVersion?: Mock;
 };
 
 describe('LinkedInService', () => {
@@ -828,6 +829,111 @@ describe('LinkedInService', () => {
           cursor: 'cursor-abc',
         },
         'linkedin-acc-1',
+      );
+    });
+  });
+
+  describe('v2 helpers', () => {
+    beforeEach(() => {
+      mockHttpClient.getApiVersion = jest.fn().mockReturnValue('v2');
+    });
+
+    it('should get product-specific search parameters without account_id query', async () => {
+      mockHttpClient.get.mockResolvedValue({
+        data: {
+          items: [{ id: 'LOCATION:1', name: 'Lisbon' }],
+        },
+      });
+
+      const result = await linkedInService.getSearchParametersV2({
+        accountId: 'acc-1',
+        routeGroup: 'sales-navigator',
+        type: 'LOCATION',
+        query: 'Lis',
+      });
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith(
+        '/acc-1/linkedin/sales-navigator/search/parameters',
+        {
+          type: 'LOCATION',
+          query: 'Lis',
+          limit: undefined,
+        },
+        'acc-1',
+      );
+      expect(result).toEqual([{ id: 'LOCATION:1', name: 'Lisbon' }]);
+    });
+
+    it('should send raw LinkedIn requests through the v2 account-scoped route', async () => {
+      mockHttpClient.post.mockResolvedValue({ data: { ok: true } });
+
+      await linkedInService.rawRequest({
+        accountId: 'acc-1',
+        url: 'https://www.linkedin.com/in/example',
+        method: 'GET',
+        bypassUrlEncoding: true,
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith(
+        '/acc-1/linkedin',
+        {
+          url: 'https://www.linkedin.com/in/example',
+          method: 'GET',
+          body: undefined,
+          headers: undefined,
+          bypass_url_encoding: true,
+        },
+        'acc-1',
+      );
+    });
+
+    it('should build v2 company, InMail, invitation, and post routes', async () => {
+      mockHttpClient.get.mockResolvedValue({ data: {} });
+      mockHttpClient.post.mockResolvedValue({ data: undefined });
+
+      await linkedInService.getCompanyV2('acc-1', 'company-1');
+      await linkedInService.getInMailCreditsV2('acc-1');
+      await linkedInService.sendInvitation({
+        accountId: 'acc-1',
+        userId: 'user-1',
+        message: 'Connect?',
+      });
+      await linkedInService.reactToPost({
+        accountId: 'acc-1',
+        postId: 'post-1',
+        reaction: 'LIKE',
+      });
+
+      expect(mockHttpClient.get).toHaveBeenNthCalledWith(
+        1,
+        '/acc-1/linkedin/company/company-1',
+        {},
+        'acc-1',
+      );
+      expect(mockHttpClient.get).toHaveBeenNthCalledWith(
+        2,
+        '/acc-1/linkedin/inmail-credits',
+        {},
+        'acc-1',
+      );
+      expect(mockHttpClient.post).toHaveBeenNthCalledWith(
+        1,
+        '/acc-1/users/invite',
+        {
+          user_id: 'user-1',
+          message: 'Connect?',
+          user_email: undefined,
+        },
+        'acc-1',
+      );
+      expect(mockHttpClient.post).toHaveBeenNthCalledWith(
+        2,
+        '/acc-1/posts/post-1/reactions',
+        {
+          reaction: 'LIKE',
+          react_as: undefined,
+        },
+        'acc-1',
       );
     });
   });

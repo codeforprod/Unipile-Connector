@@ -231,3 +231,14 @@ export interface CreateDraftRequest {
   /** Email attachments */
   attachments?: Attachment[];
 }
+
+/**
+ * Package-level email compatibility boundary.
+ */
+export interface EmailCompatibilityBoundary {
+  /** Email service API route family currently implemented by this package. */
+  apiVersion: 'v1';
+
+  /** Reason v2 email helpers are not exposed yet. */
+  reason: string;
+}

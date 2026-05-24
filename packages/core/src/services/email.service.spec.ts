@@ -501,4 +501,14 @@ describe('EmailService', () => {
       );
     });
   });
+
+  describe('compatibility boundary', () => {
+    it('should expose email as a v1 compatibility surface', () => {
+      expect(emailService.getCompatibilityBoundary()).toEqual({
+        apiVersion: 'v1',
+        reason:
+          'Email methods remain on the v1 compatibility surface until Unipile v2 email routes are confirmed.',
+      });
+    });
+  });
 });
